@@ -194,25 +194,30 @@ Bang Motion follows the open **Agent Skills** layout: a folder with `SKILL.md` (
 
 ### As a plugin (Claude Code)
 
-```
-/plugin marketplace add bangtutorial/bang-motion
-```
-```
-/plugin install bang-motion@bang-motion
-```
-
-Update later with `/plugin marketplace update bang-motion`.
+The plugin manifest in this copy already carries the renamed skill, but a
+marketplace entry can only be added from a published Git repository. Until this
+copy has its own remote, install it manually — the commands below pull the
+**upstream, unrenamed** skill, which would collide with this folder.
 
 ### Manual (any agent)
 
 ```bash
-git clone https://github.com/bangtutorial/bang-motion
+cp -r bits-bang-motion ~/.claude/skills/
 ```
+
+Upstream (unrenamed, for diffing and pulling future versions):
+
+```bash
+git clone https://github.com/bangtutorial/bang-motion /tmp/bang-motion-upstream
+```
+
+The `upstream` remote in this folder is that repository; `git fetch upstream`
+still works, and `git diff upstream/main` shows what this copy changed.
 
 | Agent | Where it goes |
 |---|---|
-| Claude Code | `~/.claude/skills/bang-motion` (Windows: `C:\Users\<you>\.claude\skills\bang-motion`) |
-| Codex CLI | your Codex skills folder, or add to `AGENTS.md`: *"For motion graphics / explainers, read and follow `bang-motion/SKILL.md`."* |
+| Claude Code | `~/.claude/skills/bits-bang-motion` (Windows: `C:\Users\<you>\.claude\skills\bits-bang-motion`) |
+| Codex CLI | your Codex skills folder, or add to `AGENTS.md`: *"For motion graphics / explainers, read and follow `bits-bang-motion/SKILL.md`."* |
 | Gemini CLI · Cursor · others | copy into the project and reference `SKILL.md` from `GEMINI.md`, `.cursor/rules`, or the system prompt |
 | Plain chat (no agent) | paste `SKILL.md` + the relevant file in `references/` as instructions; attach a starter from `assets/` |
 
