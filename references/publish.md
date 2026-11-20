@@ -1,80 +1,43 @@
 # Publish copy — `output/publish.txt`
 
-`scripts/publish.py` writes the upload package. It is the last thing the user
-touches before posting, so **every delivery writes it** and every block in it is
-copy-paste ready.
+You write the upload package. There is no generator and no validator: the copy
+is prose, and prose is what produces good captions when the writer actually
+reads the video.
+
+**Write this file in every delivery.** It is the last thing the user touches
+before posting; without it they have to write their own caption after watching,
+which is work that should already be done.
+
+## Read the finished video, then write
+
+Before a line is written, watch what should be delivered: the exported MP4, not
+the plan. Every claim in the copy must already be said or shown in the video.
+The hook is not a promise you hope the video keeps.
+
+## What you must measure, not guess
+
+Do not invent these numbers — read them from the file:
 
 ```bash
-python3 scripts/publish.py \
-  --video output/anak-dan-gadget.mp4 \
-  --slug "Anak dan Gadget" \
-  --captions work/captions.json \
-  --script script.txt \
-  --voice "Gemini TTS (Kore)" \
-  --music "pad sintetis, audio/music.wav"
+ffprobe -v error -show_entries \
+  stream=codec_name,width,height,r_frame_rate,channels:format=duration,size \
+  -of default=nw=1 output/<slug>.mp4
+
+ffmpeg -hide_banner -i output/<slug>.mp4 \
+  -af loudnorm=print_format=summary -f null - 2>&1 | \
+  grep -E "Input Integrated|Input True Peak"
 ```
 
-Refuses to run when:
-- the video file is missing — render first, write copy second
-- `publish.txt` already exists and `--force` was not passed (it may hold
-  hand-written copy; losing that is worse than failing)
-
-## What it measures, versus what you write
-
-The script reads the finished file and fills the header itself. Do not type any
-of this:
+The header of `publish.txt` carries those real values:
 
 ```
 ANAK DAN GADGET — PAKET UNGGAH
 Video: output/anak-dan-gadget.mp4
-Spesifikasi: 1080x1920, 30 fps, 39.0 s (1170 frame), H264 + AAC, I = -17.2 LUFS,
-true peak -1.8 dBTP. Berkas 4.8 MB
+Spesifikasi: 1080x1920, 30 fps, 39.0 s (1170 frame), H264 + AAC stereo,
+I = -17.2 LUFS, true peak -1.8 dBTP. Berkas 4.8 MB
 ```
 
-Duration, frame count, codec, resolution and loudness come from `ffprobe` and
-`loudnorm`. If the number in the file disagrees with what the agent believes, the
-file is right.
-
-You write only the captions, in `work/captions.json`:
-
-```json
-{
-  "title": "Anak Diam Bukan Berarti Aman",
-  "tiktok": "...",
-  "reels": "...",
-  "shorts": "...",
-  "youtube": {"title": "...", "description": "..."},
-  "notes": ["Narasi: Gemini TTS (Kore)"]
-}
-```
-
-## Two severities, and why
-
-The validator has two levels because mixing them was a mistake: an earlier
-version refused to write the file when a caption carried 7 tags, which would
-have blocked a perfectly good caption on a real project.
-
-**Hard — nothing is written, exit 1:**
-
-| Rule | Why it cannot be a warning |
-|---|---|
-| the video file does not exist | there is nothing to measure, so the header would be invented |
-| every number in the copy must appear in `script.txt` | an invented statistic is attached to the user's face; it is not a style choice |
-| `publish.txt` exists and `--force` was not passed | it may hold hand-written copy, and that loss cannot be undone |
-
-**Advisory — the file is written, the notes are printed:**
-
-| Hint | Why only a hint |
-|---|---|
-| caption text 120–600 characters | a short caption can be the right caption |
-| first sentence ≤ ~110 characters | the writer judges what the hook is |
-| 5–15 hashtags on TikTok/Reels, 3–5 on Shorts | a 7-tag Reels caption was the best file in the folder this was tested against |
-| title ≤ 100 characters | YouTube truncates; it does not reject |
-| duration within the orientation cap | the user may have approved a longer one |
-| a platform block is missing | better three good blocks than a fourth written to satisfy a checker |
-
-Read the advisory list, fix what is worth fixing, then ship. Do not treat it as
-a gate — that is what made the first version wrong.
+A header with no measured spec is a skeleton, not a delivery.
 
 ## Shape
 
@@ -87,10 +50,10 @@ a gate — that is what made the first version wrong.
 
 === YouTube Shorts
 Judul: <title, <=100 chars>
-<caption> <3-5 hashtags>
+<caption> <2-5 hashtags>
 
 CATATAN
-- <voice, music, duration note>
+- <voice, music, duration, source notes>
 ```
 
 No markdown headings inside the copies, no quotes around them, no placeholder
@@ -99,41 +62,62 @@ them is what gets pasted.
 
 A landscape build adds a `=== YouTube` block with `Judul` and `Deskripsi`
 (2–3 short lines, plus a disclaimer when the topic is financial, medical or
-legal). A portrait build never gets that block — the script writes a note saying
-why it skipped it.
+legal). A portrait build never gets that block — say why it was skipped in
+`CATATAN` instead of writing a block for a format the video is not.
+
+## Rules of thumb, not gates
+
+These are what the good files do. They are not a checklist to satisfy; a caption
+that breaks one deliberately is fine and should not be bent to fit.
+
+| Hint | Reasoning |
+|---|---|
+| caption 120–600 characters | shorter than that is usually a title, not a caption |
+| first sentence ≤ ~110 characters | Reels and TikTok truncate around 90; the hook has to survive |
+| 5–15 hashtags on TikTok/Reels, 3–5 on Shorts | Shorts ignores most tags; past 15 reads as a tag wall |
+| title ≤ 100 characters | YouTube's hard cap — the only real limit in this table |
+| mix the tags: one broad, several topical, at most one niche | name the subject, not the emotion |
+| per-platform difference is real | TikTok carries the long caption, Reels reads better short with a save prompt, Shorts leans on the title because the caption is collapsed |
+
+## Failure that is not a style question
+
+One thing here is genuinely wrong rather than different: **a number in the copy
+that the video never says.** A caption claiming "87 persen anak kecanduan layar"
+for a video that never mentions it is not a style choice — it is a false claim
+attached to the user's face.
+
+Check every figure, percentage, year and count in the copy against `script.txt`
+before writing the file. If it is not there, remove it or put it in the video
+first.
+
+Two more that are not style:
+
+- **Never overwrite an existing `publish.txt` without reading it.** It is the one
+  file the user may have edited by hand.
+- **Never write the file before the video exists.** Without a finished file there
+  is nothing to measure, so the header would be invented.
 
 ## Writing captions that are worth posting
 
 - **Derived from the finished script.** Every claim is something the video says
-  or shows. The validator catches invented numbers; it cannot catch a claim that
-  is merely unsupported, so hold yourself to the same rule.
-- **The first line is the hook**, and it has to survive truncation. Ask a
-  question, or state the surprising fact — do not open with "Video ini tentang".
+  or shows.
+- **The first line is the hook** and it must survive truncation. Ask a question,
+  or state the surprising fact — do not open with "Video ini tentang".
 - **Language follows the narration.** Indonesian voice → Indonesian caption and
   Indonesian hashtags (`#parentingindonesia`, not `#parentingtips`).
-- **Tags: one broad, several topical, at most one niche.** Name the subject in
-  the tag, not the emotion.
-- **Per-platform difference is real.** TikTok can carry the long caption with 10
-  tags; Reels reads better short with a save prompt; Shorts wants the title to do
-  the work because the caption is collapsed.
+- **Never include**: emoji walls, "link in bio" when there is no link, declared
+  statistics, or the word "viral".
+- **Do not ship a skeleton.** If the copy is not ready, say so and deliver
+  without the claim that `publish.txt` is done — a file reading "lengkapi
+  caption sebelum unggah" is a broken promise, not a draft.
 
-## Draft mode
+## Why there is no script for this
 
-`--allow-skeleton` writes the file even when a hard check fails. Use it to show
-the user a shape early. **Never ship a draft**: the delivery message names
-`publish.txt` as a deliverable, so a skeleton there is a broken promise.
+It was tried. A generator that measured the file and validated the captions was
+written and removed: it rejected a caption carrying 7 tags that was, by the
+user's own judgement, the best copy in the project. Compliance is not quality,
+and a script cannot tell a good hook from a compliant one.
 
-Observed on real files from another skill that used prose rules alone: 17 of 34
-`publish.txt` files were still skeletons — "Skeleton otomatis, lengkapi caption
-sebelum unggah" — with placeholder tags like `#bad #mood`. The same rules in
-prose produced both excellent and unusable output, because nothing forced the
-question at the end. That is the reason this script measures the file and asks
-for the captions, not the reason to gate style.
-
-## What this script does not do
-
-It does not write the captions. The copy comes from the agent, from the finished
-script, and that is where the quality lives — a validator cannot tell a good hook
-from a compliant one. It only stops the two failures that a writer cannot catch
-about their own work: numbers that were never in the video, and a file quietly
-replaced.
+The one part that a writer cannot check about their own work is the invented
+number, and that is caught by re-reading `script.txt` — which is a step in the
+rules above, not a program.

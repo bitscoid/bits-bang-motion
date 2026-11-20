@@ -400,25 +400,29 @@ bagian 1 dan 1b. Ringkasnya:
    ulang audionya untuk disinkronkan. Detail bentuk naskah, petunjuk rekam,
    dan retime di `references/explainer.md` → "Penyerahan".
 
-7b. **Tulis `publish.txt` — wajib, bukan pelengkap.** Setelah MP4 ada:
+7b. **Tulis `output/publish.txt` — wajib, bukan pelengkap.** Kamu yang
+   menulis captionnya; tidak ada generator, dan itu memang yang menghasilkan
+   caption terbaik. Sebelum menulis:
+
+   - **Ukur dulu berkasnya**, jangan mengarang header:
 
 ```bash
-python3 scripts/publish.py --video output/<slug>.mp4 --slug "<Judul>" \
-  --captions work/captions.json --script script.txt
+ffprobe -v error -show_entries \
+  stream=codec_name,width,height,r_frame_rate,channels:format=duration,size \
+  -of default=nw=1 output/<slug>.mp4
+ffmpeg -hide_banner -i output/<slug>.mp4 \
+  -af loudnorm=print_format=summary -f null - 2>&1 | \
+  grep -E "Input Integrated|Input True Peak"
 ```
 
-   **Caption tetap tulisanmu**, bukan hasil template. Skrip hanya mengukur
-   berkas jadi (durasi, codec, resolusi, LUFS) dan menanyakan dua hal yang
-   tidak bisa kamu nilai sendiri:
+   - **Periksa setiap angka di caption terhadap `script.txt`.** Angka yang
+     tidak pernah diucapkan video adalah klaim palsu menempel di wajah user —
+     satu-satunya hal di sini yang benar-benar salah, bukan selera.
+   - **Jangan menimpa `publish.txt` yang sudah ada** tanpa membacanya dulu;
+     itu satu-satunya berkas yang mungkin diedit tangan.
 
-   - **keras** — angka di caption tidak ada di `script.txt` (klaim palsu),
-     berkas video tidak ada, atau `publish.txt` sudah ada tanpa `--force`.
-     Ini menghentikan penulisan, exit 1.
-   - **saran** — panjang caption, jumlah tag, panjang hook, cap durasi.
-     Ditulis lalu dilaporkan; **jangan diperlakukan sebagai gerbang**.
-
-   Angka 150–600 karakter dan 5–15 tag adalah petunjuk, bukan syarat. Aturan
-   lengkap: `references/publish.md`.
+   Panjang caption, jumlah tag, dan panjang hook adalah **petunjuk, bukan
+   syarat**. Aturan lengkap + alasan tiap angka: `references/publish.md`.
 
 8. **Bersih-bersih hanya menyentuh yang TIDAK dipakai revisi.** Revisi hampir
    selalu datang setelah penyerahan, jadi default-nya: simpan. Buang hanya
@@ -613,5 +617,4 @@ dan buat layer dari belakang ke depan. Build 10 panggung ≈ 1 jam, 0 kredit.
 | `scripts/make_music.py` | MUSIK: bed sintetis (pad + bass + arp + breath) dari progresi akor — `warm`/`dark`/`bright`, 48 kHz stereo, hanya butuh numpy |
 | `references/imagegen.md` | GAMBAR: rantai model berurutan (`phoenix → flux2dev → lucid → schnell → pollinations`), ukuran yang dipatuhi, larangan generate wajah nyata |
 | `scripts/image-gen.py` | GAMBAR: `--prompt`/`--out`/`--size`/`--model`, selalu PNG, mencatat model & percobaan ke `work/image-meta.json` |
-| `references/publish.md` | PUBLISH: aturan caption per platform, batas tag, validasi angka vs naskah, larangan skeleton |
-| `scripts/publish.py` | PUBLISH: `output/publish.txt` dari berkas MP4 nyata — durasi/codec/LUFS diukur, caption divalidasi sebelum ditulis |
+| `references/publish.md` | PUBLISH: bentuk `output/publish.txt`, perintah `ffprobe`/`loudnorm` untuk header, petunjuk caption per platform, larangan skeleton |
