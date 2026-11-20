@@ -153,7 +153,7 @@ flowchart LR
 3. **Settle the assets.** Your own photos and logo come first. If you have none, the agent can generate them through an image MCP (fictional faces, logos added in code) — or pick a concept that needs no photos.
 4. **Let it build.** You get one `index.html`. The agent captures key seconds and checks them against the rules before handing over.
 5. **Review and iterate.** Open it, scrub with `?debug=1`, and describe what feels off. Feedback lands on the same file.
-6. **Deliver.** Keep the HTML, or export MP4 with `scripts/export-frames.mjs`. With a voice-over the timeline syncs word by word: generate one with Gemini TTS, or send your own recording.
+6. **Deliver.** Keep the HTML, or export MP4 with `scripts/export-frames.mjs`, then write the upload copy with `scripts/publish.py`. With a voice-over the timeline syncs word by word: generate one with Gemini TTS, or send your own recording.
 
 > **Tip:** start each new video in a **new chat**. The skill is read when it is first invoked, and a long chat keeps earlier decisions in context.
 
@@ -240,6 +240,7 @@ The skill triggers on requests like "make an opener…", "promo video…", "expl
 | Generate a voice-over | `GEMINI_API_KEY` (`scripts/tts-gemini.py`) — optional |
 | Generate a music bed | numpy only (`scripts/make_music.py`) — optional |
 | Generate images | a bearer token for the relay (`scripts/image-gen.py`) — optional; falls back to Pollinations |
+| Write publish copy | ffmpeg/ffprobe (`scripts/publish.py`) — the upload file is part of the deliverable |
 | Word-level sync | faster-whisper + ffmpeg (`scripts/asr-words.py`) — optional |
 | Sync to voice-over | word-level via faster-whisper, **or** per-pause with no extra install: `scripts/vo-pauses.html` |
 | Use video clips | MP4 (H.264) or WebM files in `assets/` — optional |
@@ -274,6 +275,7 @@ references/
   explainer.md                   explainer styles, camera recipes, VO re-timing
   voiceover.md                   script → TTS → word timing → cues → music → MP4 with audio
   imagegen.md                    image models, fallback chain, prompt discipline
+  publish.md                     caption rules per platform, and what the validator rejects
   kartun-panggung.md             cartoon stage explainers
   architecture.md                stage, camera rig, determinism, export
   ae-bridge-higgsfield.md        building inside After Effects via the MCP bridge
@@ -289,6 +291,7 @@ scripts/
   make-cues.mjs                  words.json → audio/cues.js for the page
   make_music.py                  synthesised music bed from a chord progression
   image-gen.py                   text → PNG through a measured model chain
+  publish.py                     output/publish.txt from the finished MP4
   vo-pauses.html                 voice-over pause detection, no ffmpeg needed
   serve.py                       no-cache dev server (optional)
   ae/bridge/                     After Effects bridge helpers

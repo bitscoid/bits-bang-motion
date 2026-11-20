@@ -400,6 +400,20 @@ bagian 1 dan 1b. Ringkasnya:
    ulang audionya untuk disinkronkan. Detail bentuk naskah, petunjuk rekam,
    dan retime di `references/explainer.md` → "Penyerahan".
 
+7b. **Tulis `publish.txt` — wajib, bukan pelengkap.** Setelah MP4 ada:
+
+```bash
+python3 scripts/publish.py --video output/<slug>.mp4 --slug "<Judul>" \
+  --captions work/captions.json --script script.txt
+```
+
+   Skrip membaca durasi, codec, resolusi, dan LUFS dari berkas jadi lalu
+   memvalidasi caption: 150–600 karakter, hook ≤ ~110, tag 8–15 (TikTok/Reels)
+   dan 3–5 (Shorts), dan **setiap angka di caption harus ada di `script.txt`**.
+   Gagal validasi = tidak menulis apa pun, exit 1. Skrip menolak menimpa
+   `publish.txt` yang sudah ada tanpa `--force` — berkas itu mungkin
+   diedit tangan. Aturan lengkap: `references/publish.md`.
+
 8. **Bersih-bersih hanya menyentuh yang TIDAK dipakai revisi.** Revisi hampir
    selalu datang setelah penyerahan, jadi default-nya: simpan. Buang hanya
    berkas yang (a) tidak dibaca ulang oleh revisi mana pun DAN (b) bisa
@@ -593,3 +607,5 @@ dan buat layer dari belakang ke depan. Build 10 panggung ≈ 1 jam, 0 kredit.
 | `scripts/make_music.py` | MUSIK: bed sintetis (pad + bass + arp + breath) dari progresi akor — `warm`/`dark`/`bright`, 48 kHz stereo, hanya butuh numpy |
 | `references/imagegen.md` | GAMBAR: rantai model berurutan (`phoenix → flux2dev → lucid → schnell → pollinations`), ukuran yang dipatuhi, larangan generate wajah nyata |
 | `scripts/image-gen.py` | GAMBAR: `--prompt`/`--out`/`--size`/`--model`, selalu PNG, mencatat model & percobaan ke `work/image-meta.json` |
+| `references/publish.md` | PUBLISH: aturan caption per platform, batas tag, validasi angka vs naskah, larangan skeleton |
+| `scripts/publish.py` | PUBLISH: `output/publish.txt` dari berkas MP4 nyata — durasi/codec/LUFS diukur, caption divalidasi sebelum ditulis |

@@ -125,6 +125,8 @@ Ada dua jalur, dipilih di langkah nol. Jangan mencampurnya.
 ter-mux. Alurnya di `references/voiceover.md` §1–§7. Yang diserahkan:
 
 - `output/<slug>.mp4` — H.264 + AAC, durasi = `CUES.dur`
+- `output/publish.txt` — caption siap tempel untuk TikTok, Reels, Shorts
+  (`scripts/publish.py`, aturannya di `references/publish.md`)
 - `audio/voiceover.wav`, `audio/music.wav`, `audio/cues.js` — agar suara atau
   bed bisa diganti tanpa membangun ulang
 - naskah final di dalam pesan, bukan hanya di berkas
@@ -152,6 +154,12 @@ Naskah yang sama disimpan sebagai `vo-script.md`. Jangan hanya menulis
 
 **Tanpa suara sejak awal.** Tidak ada naskah, tidak ada unsur suara di
 penutup. Jangan menyelipkan naskah VO pada video yang memang diminta bisu.
+
+**Ketiga jalur tetap menyerahkan `output/publish.txt`.** Caption bukan
+pelengkap: tanpa itu user harus menulis sendiri setelah menonton, dan itu
+pekerjaan yang seharusnya sudah selesai. Jalankan `scripts/publish.py` setelah
+MP4 ada — skrip membaca durasi, codec, dan LUFS dari berkas jadi, bukan dari
+catatan.
 
 ## Mulai dari starter yang benar
 
