@@ -202,6 +202,16 @@ The 0.6 s tail is deliberate: a video that stops on the final syllable feels
 cut off. Without `cues.js` the constant still applies, so a silent build keeps
 working.
 
+**A longer `DUR` does not build scenes for you.** The starters end with
+`tl.to({}, {duration: .01}, DUR)` — a spacer that stretches the timeline to
+`DUR`, not a scene. If the audio runs 47 s and your last scene ends at 18 s,
+seconds 18–47 are a static frame. That is the one failure this mechanism can
+cause: the render succeeds, the duration is right, and the back half is dead.
+
+So when the voice is longer than the example choreography, **add scenes until
+the last one ends near `DUR`** — check with a snapshot at `DUR - 3`. A spacer at
+the end is the safety net, not the plan.
+
 ## 5. Making text land on its word
 
 The starters' `say(sel, at)` staggers a whole line decoratively. That is

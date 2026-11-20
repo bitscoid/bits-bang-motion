@@ -28,7 +28,17 @@ const OUT   = arg('out', 'audio/cues.js');
 const TAIL  = Number(arg('tail', 0.6));   // ruang setelah kata terakhir
 const DELAY = process.argv.includes('--no-delay') ? 0 : null;
 
-const data = JSON.parse(await readFile(WORDS, 'utf8'));
+const data = await readFile(WORDS, 'utf8').then(JSON.parse).catch(err => {
+  if (err.code === 'ENOENT') {
+    console.error(`${WORDS} not found — run scripts/asr-words.py first.`);
+    console.error(`  (or pass --words <path> if the file lives elsewhere)`);
+  } else if (err instanceof SyntaxError) {
+    console.error(`${WORDS} is not valid JSON — regenerate it, do not hand-edit.`);
+  } else {
+    console.error(`cannot read ${WORDS}: ${err.message}`);
+  }
+  process.exit(1);
+});
 
 if (!Array.isArray(data.segments) || !data.segments.length) {
   console.error(`${WORDS} has no segments — run scripts/asr-words.py first.`);
