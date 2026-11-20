@@ -1,14 +1,14 @@
 {
   "name": "bits-bang-motion",
-  "displayName": "Bang Motion",
+  "displayName": "BITS Bang Motion",
   "version": "1.19.0",
   "description": "Build motion graphics in the browser — product openers and promos, bumpers and idents, channel intros, kinetic typography, lower thirds, and five explainer styles — that move like video instead of reading like a slide deck. Output is a single index.html that autoplays and loops.",
   "author": {
-    "name": "Bang Tutorial",
-    "url": "https://youtube.com/bangtutorial"
+    "name": "BITS",
+    "url": "https://github.com/bitscoid"
   },
-  "homepage": "https://github.com/bangtutorial/bang-motion",
-  "repository": "https://github.com/bangtutorial/bang-motion",
+  "homepage": "https://github.com/bitscoid/bits-bang-motion",
+  "repository": "https://github.com/bitscoid/bits-bang-motion",
   "license": "MIT",
   "keywords": [
     "motion-graphics",

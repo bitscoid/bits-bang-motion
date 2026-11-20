@@ -1,8 +1,8 @@
 <div align="center">
 
-<img src="icon.svg" width="112" alt="Bang Motion icon">
+<img src="icon.svg" width="112" alt="BITS Bang Motion icon">
 
-# Bang Motion
+# BITS Bang Motion
 
 **An agent skill that turns your AI coding agent into a motion designer.**<br>
 Openers, promos, product demos, kinetic typography, and explainers — built as a single `index.html` that plays like video, not like slides.
@@ -12,7 +12,7 @@ Openers, promos, product demos, kinetic typography, and explainers — built as 
 [![Agent Skills](https://img.shields.io/badge/format-Agent%20Skills-1c2a4a?style=flat-square)](#install)
 [![Works with](https://img.shields.io/badge/works%20with-Claude%20Code%20%C2%B7%20Codex%20%C2%B7%20Gemini%20CLI%20%C2%B7%20Cursor-7a5af5?style=flat-square)](#install)
 
-<img src="docs/gallery/hero.jpg" alt="A grid of styles Bang Motion can build: grainy gradient opener, SaaS product tour, flat pop promo with photos, visual journalism explainer, continuous action explainer, cartoon collage explainer" width="100%">
+<img src="docs/gallery/hero.jpg" alt="A grid of styles BITS Bang Motion can build: grainy gradient opener, SaaS product tour, flat pop promo with photos, visual journalism explainer, continuous action explainer, cartoon collage explainer" width="100%">
 
 [What you can make](#what-you-can-make) · [Style gallery](#style-gallery) · [Workflow](#recommended-workflow) · [Example prompts](#example-prompts) · [Install](#install) · [FAQ](#faq)
 
@@ -22,7 +22,7 @@ Openers, promos, product demos, kinetic typography, and explainers — built as 
 
 ## Why
 
-Ask an AI agent for "a video" and you usually get **slides**: one section per idea, a title, a photo, a fade between them. Bang Motion encodes what a working motion designer insists on — one continuous world, a camera that actually moves, a subject that persists, text that lives inside the scene — as **rules an agent can check in its own code**, plus starters that make the right architecture the easy path.
+Ask an AI agent for "a video" and you usually get **slides**: one section per idea, a title, a photo, a fade between them. BITS Bang Motion encodes what a working motion designer insists on — one continuous world, a camera that actually moves, a subject that persists, text that lives inside the scene — as **rules an agent can check in its own code**, plus starters that make the right architecture the easy path.
 
 It also stops every project from looking the same. The look is **derived from your brand** through a required style brief, the structure is **chosen from a menu of concepts**, and nothing is inherited from the starter or copied from a reference.
 
@@ -190,29 +190,34 @@ A cartoon explainer on why volcanoes erupt, for kids, 9:16, I will send a voice-
 
 ## Install
 
-Bang Motion follows the open **Agent Skills** layout: a folder with `SKILL.md` (frontmatter + instructions), `references/`, `assets/`, `scripts/`. It also ships as a Claude Code **plugin**.
+BITS Bang Motion follows the open **Agent Skills** layout: a folder with `SKILL.md` (frontmatter + instructions), `references/`, `assets/`, `scripts/`. It also ships as a Claude Code **plugin**.
 
 ### As a plugin (Claude Code)
 
-The plugin manifest in this copy already carries the renamed skill, but a
-marketplace entry can only be added from a published Git repository. Until this
-copy has its own remote, install it manually — the commands below pull the
-**upstream, unrenamed** skill, which would collide with this folder.
+```
+/plugin marketplace add bitscoid/bits-bang-motion
+```
+```
+/plugin install bits-bang-motion@bits-bang-motion
+```
+
+Update later with `/plugin marketplace update bits-bang-motion`.
 
 ### Manual (any agent)
 
 ```bash
-cp -r bits-bang-motion ~/.claude/skills/
+git clone git@github.com:bitscoid/bits-bang-motion.git
 ```
 
-Upstream (unrenamed, for diffing and pulling future versions):
+Upstream (the original, unrenamed, for diffing and pulling future versions):
 
 ```bash
 git clone https://github.com/bangtutorial/bang-motion /tmp/bang-motion-upstream
 ```
 
-The `upstream` remote in this folder is that repository; `git fetch upstream`
-still works, and `git diff upstream/main` shows what this copy changed.
+This repository keeps that original as a second remote named `upstream`, so
+`git fetch upstream` still works and `git diff upstream/main` shows exactly what
+this fork changes.
 
 | Agent | Where it goes |
 |---|---|
@@ -323,4 +328,4 @@ Issues and pull requests are welcome. When you add a rule, describe which failur
 
 ## License
 
-[MIT](LICENSE) © 2026 [Bang Tutorial](https://youtube.com/bangtutorial)
+[MIT](LICENSE) © 2026 [BITS](https://github.com/bitscoid/bits-bang-motion), derived from [Bang Motion](https://github.com/bangtutorial/bang-motion) © 2026 Bang Tutorial
