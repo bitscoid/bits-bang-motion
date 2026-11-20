@@ -328,4 +328,4 @@ Issues and pull requests are welcome. When you add a rule, describe which failur
 
 ## License
 
-[MIT](LICENSE) © 2026 [BITS](https://github.com/bitscoid/bits-bang-motion), derived from [Bang Motion](https://github.com/bangtutorial/bang-motion) © 2026 Bang Tutorial
+[MIT](LICENSE) © 2026 [BITS](https://github.com/bitscoid/bits-bang-motion), derived from [Bang Motion](https://github.com/bangtutorial/bang-motion) © 2026 Bang Tutorial. See [NOTICE](NOTICE) for the attribution record.

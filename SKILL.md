@@ -14,7 +14,7 @@ metadata:
 
 **v1.19.0 · MIT · [BITS](https://github.com/bitscoid/bits-bang-motion).** Turunan dari
 [Bang Motion](https://github.com/bangtutorial/bang-motion) v1.19.0 oleh Bang Tutorial —
-lihat `LICENSE` untuk atribusi aslinya. Riwayat perubahan di `CHANGELOG.md`;
+lihat `NOTICE` untuk atribusi aslinya. Riwayat perubahan di `CHANGELOG.md`;
 cara pasang di `README.md`.
 
 Skill ini untuk AI coding agent apa pun (format Agent Skills terbuka).

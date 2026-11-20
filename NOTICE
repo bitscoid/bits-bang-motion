@@ -1,0 +1,23 @@
+# Notice
+
+BITS Bang Motion is a fork of [Bang Motion](https://github.com/bangtutorial/bang-motion)
+by Bang Tutorial, used under the MIT License.
+
+- Original work: Copyright (c) 2026 Bang Tutorial — https://github.com/bangtutorial/bang-motion
+- Modifications in this fork: Copyright (c) 2026 BITS — https://github.com/bitscoid/bits-bang-motion
+
+The full MIT text is in `LICENSE`, unmodified, so the original grant and
+copyright notice stay exactly as published.
+
+## What this fork changes
+
+- The skill is renamed `bang-motion` → `bits-bang-motion` in `SKILL.md`, both
+  plugin manifests, and the documented install paths.
+- Author, homepage and repository metadata point at this repository.
+- Two starter document titles read "BITS Bang Motion"; starter file comments
+  credit the original as `Original:` and this fork as `Adapted for`.
+- `upstream` is kept as a second git remote so `git diff upstream/main` still
+  shows the full delta against the original.
+
+Nothing else is altered: references, scripts, assets, style rules and the
+workflow are as upstream published them at v1.19.0.
