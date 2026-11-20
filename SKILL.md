@@ -217,9 +217,9 @@ gagal: opener adalah wajah produk, dan dua produk tidak boleh berwajah sama.
    - gaya render objek: satu keluarga dari menu `techniques.md` §7e (flat, clay,
      glossy, kaca, isometrik, realistis, garis neon…);
    - aset foto (bila konsep memakai foto orang/tempat/produk): sumbernya — foto
-     user, generate lewat MCP Higgsfield, atau stok berlisensi — DITANYAKAN ke
-     user, plus daftar shot per babak (`references/opener-konsep.md` "Foto dalam
-     opener");
+     user, generate lewat `scripts/image-gen.py`, atau stok berlisensi —
+     DITANYAKAN ke user, plus daftar shot per babak (`references/opener-konsep.md`
+     "Foto dalam opener");
    - transisi: tentukan batas mana yang memerlukan efek dan mana yang cukup cut;
      pilih dari menu §4c sesuai konteks, bukan wajib dua jenis atau wajib 3D;
    - satu momen istimewa (di mana efek termahal dipakai, sekali).
@@ -400,6 +400,24 @@ bagian 1 dan 1b. Ringkasnya:
    ulang audionya untuk disinkronkan. Detail bentuk naskah, petunjuk rekam,
    dan retime di `references/explainer.md` → "Penyerahan".
 
+8. **Bersih-bersih hanya menyentuh yang TIDAK dipakai revisi.** Revisi hampir
+   selalu datang setelah penyerahan, jadi default-nya: simpan. Buang hanya
+   berkas yang (a) tidak dibaca ulang oleh revisi mana pun DAN (b) bisa
+   direproduksi persis dengan satu perintah. Bila ragu, simpan dan sebutkan
+   ukurannya di pesan penutup — user yang memutuskan, bukan kamu.
+
+   | Kategori | Contoh | Tindakan |
+   |---|---|---|
+   | Hasil antara yang sudah digantikan | `audio/mix.wav` saat `mix-norm.wav` yang dipakai, `frames/` setelah MP4 jadi, folder aset kosong | buang, boleh tanpa bertanya |
+   | Reproducible dengan satu perintah | `audio/music.wav` (`make_music.py`), `node_modules/` (`npm i`) | buang hanya bila user sudah bilang akan render ulang; kalau tidak, tanya dulu |
+   | **Sumber yang tidak bisa dipulihkan murah** | `audio/voiceover.wav` (kuota TTS + intonasi berubah), `audio/words.json` + `audio/cues.js` (ASR ulang geser ±0,1 dtk → semua tween meleset), `script.txt` (sumber penyelarasan ejaan), `index.html`, MP4 final | **jangan pernah** |
+   | Alat kerja & nilai | `scripts/*` salinan skill, skrip pengukur (`framechk`/`eyechk`/`rigchk`), frame bukti (`verify.png`), `README.md`, `vo-script.md` | simpan — ukurannya nol dan itulah yang dipakai merevisi |
+
+   Yang boleh dibuang tanpa bertanya hanya kategori pertama. `work/` memang
+   disposable (`references/voiceover.md` §3). Jangan menyapu folder dengan
+   `rm -rf` pola luas — sebut berkasnya satu per satu di pesan penutup agar
+   user tahu apa yang hilang dan berapa biaya render ulangnya.
+
 ## Checklist sebelum menyerahkan
 
 - [ ] Style brief (tema, palet dari brand, font display berkarakter, satu
@@ -515,6 +533,10 @@ bagian 1 dan 1b. Ringkasnya:
 - [ ] Angka yang berubah tiap frame (jam, counter) memakai
       `font-variant-numeric:tabular-nums` + `min-width` supaya wadahnya
       tidak berubah lebar
+- [ ] Bersih-bersih mengikuti alur kerja #8: hanya kategori "hasil antara"
+      yang dibuang tanpa bertanya; `voiceover.wav`, `words.json`, `cues.js`,
+      `script.txt`, `index.html`, MP4, alat ukur, dan `verify.png` tetap ada;
+      berkas yang dibuang disebut satu per satu di pesan penutup
 
 ## Jebakan yang sudah memakan korban
 
@@ -569,3 +591,5 @@ dan buat layer dari belakang ke depan. Build 10 panggung ≈ 1 jam, 0 kredit.
 | `scripts/asr-words.py` | ASR: `audio/voiceover.wav` → `audio/words.json` per kata, `text_display` diselaraskan ke `script.txt` |
 | `scripts/make-cues.mjs` | `audio/words.json` → `audio/cues.js` (dimuat lewat `<script>`, jadi tetap jalan di `file://`) |
 | `scripts/make_music.py` | MUSIK: bed sintetis (pad + bass + arp + breath) dari progresi akor — `warm`/`dark`/`bright`, 48 kHz stereo, hanya butuh numpy |
+| `references/imagegen.md` | GAMBAR: rantai model berurutan (`phoenix → flux2dev → lucid → schnell → pollinations`), ukuran yang dipatuhi, larangan generate wajah nyata |
+| `scripts/image-gen.py` | GAMBAR: `--prompt`/`--out`/`--size`/`--model`, selalu PNG, mencatat model & percobaan ke `work/image-meta.json` |

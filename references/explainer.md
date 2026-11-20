@@ -249,14 +249,14 @@ simbol tidak cukup menjelaskan. Explainer jurnalistik yang baik (±20 beat per
    Dokumen/stempel/blok tanggal/catatan tangan dihitung OBJEK (dibaca sebagai
    gambar) bukan tingkat teks — syaratnya isi ≤ 3 baris pendek.
 8. **Aset tambahan cepat**: properti fotoreal "studio product photo,
-   isolated on pure white" (Higgsfield `gpt_image_2_5`, tanpa wajah orang
+   isolated on pure white" dari `scripts/image-gen.py` (tanpa wajah orang
    nyata) ditumpuk `mix-blend-mode:multiply` — latar putihnya lenyap di atas
    grid tanpa hapus latar. Jangan beri `drop-shadow` pada elemen multiply
    (bayangannya jadi persegi); bayangan sudah ada di fotonya. Foto arsip
-   berlatar rumit tetap lewat `image_background_remover` (butuh `prompt`),
-   lalu pangkas margin transparan (bbox alpha) supaya ukuran CSS = isi.
-9. Kalau `remove_background` menghapus subjeknya (kapal hilang, tersisa
-   haluan kapal lain), jangan dipaksa — generate properti pengganti.
+   berlatar rumit dipotong dengan ambang warna + pangkas margin transparan
+   (bbox alpha) supaya ukuran CSS = isi.
+9. Kalau penghapusan latar ikut menghapus subjeknya (kapal hilang, tersisa
+   haluan kapal lain), jangan dipaksa — generate ulang dengan latar polos.
 
 Helper di `assets/starter-explainer-katalog.html`: `slam` (stempel
 dihentak), `block` (blok tanggal disingkap dari kiri), `multiply` (grid
@@ -337,10 +337,13 @@ autoplay. Durasi adegan ikut durasi klip (ukur dulu dengan ffprobe).
 
 ## Sumber gambar
 
-- **Digenerate** (kartun): Higgsfield `gpt_image_2` (1k, medium), prompt
-  satu gaya untuk semua aset ("flat vector, outline coklat tebal, warna
-  hangat, latar putih polos"), lalu `remove_background` → PNG transparan.
-  Generate dalam satu batch supaya gayanya seragam.
+- **Digenerate** (kartun): `scripts/image-gen.py` — rantai fallback
+  `phoenix → flux2dev → lucid → schnell → pollinations`, urutannya ditetapkan
+  dari pengukuran (lihat `references/imagegen.md`). Satu blok gaya untuk semua
+  aset ("flat vector, outline coklat tebal, warna hangat, latar putih polos");
+  generate dalam satu batch supaya gayanya seragam, lalu potong latarnya.
+  `--size 1080x1920` hanya dipatuhi `phoenix` dan `lucid`; model lain menjawab
+  1024² dan skrip memperbesarnya. Sebutkan model yang dipakai di penyerahan.
 - **Foto asli** (jurnalistik): Wikimedia Commons API
   `action=query&generator=search&gsrnamespace=6&prop=imageinfo&iiprop=url|extmetadata&iiurlwidth=1920`
   → cek `LicenseShortName` (Public domain / CC BY / CC BY-SA), unduh thumb
@@ -496,11 +499,12 @@ dan foto asli — bukan hitam-putih, bukan kartun.
 
 - Latar `#fff` + grid 120 px `rgba(0,0,0,.07)` yang dipudarkan ke tepi (mask
   radial). Tanpa grain, tanpa vignette — bersih.
-- **Cutout** = foto Commons yang latarnya dihapus (impor URL ke Higgsfield
-  `media_import_url` → `remove_background`; lebih andal daripada upload +
-  PUT). Bayangan dua lapis `drop-shadow` (jauh lembut + dekat tipis).
+- **Cutout** = foto Commons yang latarnya dihapus (unduh dulu, lalu potong
+  dengan ambang warna; latar polos lebih mudah daripada latar rumit).
+  Bayangan dua lapis `drop-shadow` (jauh lembut + dekat tipis).
 - **Properti pendukung** (sumpit, globe, blok mi) boleh digenerate fotoreal
-  "studio product photo, isolated on pure white" lalu dihapus latarnya.
+  "studio product photo, isolated on pure white" lewat `scripts/image-gen.py`,
+  lalu latarnya dihapus.
 - **Tipografi campur** per beat: script (Caveat) untuk penghubung ("lihat
   bagaimana", "lalu…"), sans 900 untuk subjek, italic 900 untuk angka/klaim,
   kicker mono-ish uppercase spasi lebar, body copy kecil abu-abu.

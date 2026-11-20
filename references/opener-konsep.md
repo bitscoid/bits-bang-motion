@@ -329,7 +329,8 @@ foto yang sah, jadi sumbernya diputuskan BERSAMA user sebelum membangun.
 **1. Tanyakan sumber foto dulu** (satu pertanyaan, sebelum style brief final)
 - **Foto dari user** (prioritas): foto brand, duta, pengguna, tempat usaha, atau produk.
   Pastikan user berhak memakainya dan orang di foto setuju tampil.
-- **Generate lewat MCP Higgsfield** bila user tidak punya foto dan menyetujuinya.
+- **Generate lewat `scripts/image-gen.py`** bila user tidak punya foto dan menyetujuinya
+  (rantai model & ukuran yang dipatuhi: `references/imagegen.md`).
 - **Stok berlisensi** yang disediakan atau disetujui user.
 - Tanpa foto: pilih konsep lain atau gaya render ilustrasi (`techniques.md` §7e) — jangan
   diam-diam mengganti foto dengan ilustrasi yang tidak disepakati.
@@ -339,8 +340,8 @@ babak butuh foto apa (orang pop dari bawah, bersorak, menunjuk ke samping, memeg
 ponsel, tangan memegang produk, lokasi pakai, merchandise), orientasi, dan ruang kosong
 untuk teks. User yang memberi foto sendiri juga dibantu daftar ini.
 
-**3. Generate via MCP (bila disetujui)**
-- `generate_image` dengan satu blok gaya untuk semua shot: foto studio, pencahayaan yang
+**3. Generate dengan `scripts/image-gen.py` (bila disetujui)**
+- Satu blok gaya untuk semua shot: foto studio, pencahayaan yang
   sama, latar polos yang kontras dengan baju dan rambut, framing (full body / setengah
   badan), pose, ekspresi. Latar polos memudahkan potongan.
 - Konsistensi orang: satu persona per peran; pakai gambar referensi/karakter yang sama
@@ -349,8 +350,8 @@ untuk teks. User yang memberi foto sendiri juga dibantu daftar ini.
   Busana boleh berwarna brand; logo dan teks brand ditambahkan di kode (stiker/lapisan),
   bukan di-generate, karena teks buatan generator sering rusak.
 - Generate satu batch per gaya, lalu tunjukkan hasilnya ke user sebelum dianimasikan.
-- `remove_background` → PNG transparan. Bila subjek ikut terhapus atau tepi rambut rusak,
-  generate ulang dengan latar lebih kontras — jangan dipaksa.
+- Latar polos lalu dipotong jadi PNG transparan. Bila subjek ikut terhapus atau tepi rambut
+  rusak, generate ulang dengan latar lebih kontras — jangan dipaksa.
 - Foto lokasi/tempat pakai: foto dokumenter sudut mata, tanpa teks dan merek; penanda
   brand ditempel di kode.
 

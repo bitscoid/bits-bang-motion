@@ -627,8 +627,11 @@ lain. Semua starter sudah membawa helper `clip()`.
 
 **Sumber klip** (ditanyakan ke user, sama seperti foto — `opener-konsep.md` "Foto dalam opener")
 - File dari user (prioritas): rekaman layar produk, B-roll brand, footage acara.
-- Generate lewat MCP Higgsfield bila disetujui — cek biaya dulu (klip video jauh lebih mahal
-  daripada gambar). Paling konsisten: generate gambar dengan gaya proyek, lalu image-to-video.
+- Video hasil generate bila disetujui — cek biaya dulu (klip video jauh lebih mahal daripada
+  gambar). Skill ini tidak punya alat video; yang tersedia hanya `scripts/image-gen.py`
+  (`references/imagegen.md`), dan itu menghasilkan **gambar diam**. Untuk klip bergerak,
+  ambil dari user atau stok, atau animasikan gambar itu di dalam kode (Ken Burns, parallax,
+  geser lapisan) — jauh lebih murah dan tetap deterministik.
 - Stok berlisensi. Konteks faktual (berita, sejarah, data): klip hasil generate diberi label
   "ilustrasi/rekonstruksi" — jangan disajikan sebagai rekaman asli; wajah orang nyata tidak
   di-generate.

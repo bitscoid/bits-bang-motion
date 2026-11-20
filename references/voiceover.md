@@ -177,6 +177,10 @@ returns timestamps that differ by ~±0.1 s, which silently desyncs a re-render.
 `audio/words.json` and `audio/cues.js` sit beside `voiceover.wav` so
 `rm -rf work` loses nothing that matters.
 
+Never sweep the project with a broad `rm -rf`, and never delete a source a
+revision would need (`voiceover.wav`, `words.json`, `cues.js`, `script.txt`,
+`index.html`, the final MP4). Full rule: SKILL.md workflow #8.
+
 ## 4. Putting the audio in the page
 
 The starters already ship the hook — `<audio id="vo" src="">` and a ticker
