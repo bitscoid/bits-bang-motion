@@ -43,15 +43,31 @@ produk → 3; gerak/rute → 5; sains/edukasi berkarakter → 6; topik ringan �
 | 5 | Aksi kontinu (vektor) | dunia mengalir, satu subjek, angka di dalam dunia, ganti sudut | kecepatan, rute, transportasi, olahraga, proses | 100 % SVG digambar, tanpa generate |
 | 6 | Kartun panggung | flat cerah, satu panggung per adegan, tokoh bersendi beraksi, mesin/air/tanaman hidup, tanpa caption | edukasi sains/sosial berkarakter, proses & dampak, cerita | tubuh & dunia vektor; kepala digenerate → ekspresi lokal |
 
-**Tiga hal lain dalam pertanyaan yang sama:**
+**Empat hal lain dalam pertanyaan yang sama:**
 
 | Hal | Pilihan | Default bila "terserah" |
 |---|---|---|
 | Rasio | 16:9 (YouTube/layar) · 9:16 (Reels/TikTok/Shorts) · 1:1 | 16:9 |
 | Durasi | 30 dtk · 60 dtk · 90 dtk | 60 dtk |
-| Suara | **generate VO (Gemini TTS)** · rekam sendiri dikirim nanti · tanpa suara · musik saja | tanpa suara, naskah VO tetap ditulis |
+| VO (narasi) | **generate (Gemini TTS)** · rekam sendiri dikirim nanti · tanpa VO | tanpa VO, tapi naskahnya tetap ditulis |
+| Musik latar | **ya, dibuatkan** · kirim sendiri · tanpa musik | **ya, dibuatkan** bila ada VO atau teks yang harus dibaca |
 
-**Pilihan "generate VO" hanya sah bila `GEMINI_API_KEY` ada.** Cek sebelum
+**VO dan musik adalah dua keputusan terpisah, bukan satu daftar.** Video
+bernarasi hampir selalu lebih baik dengan musik latar — itu yang membuatnya
+terasa selesai, bukan seperti rekaman presentasi. Jangan menawarkan
+"VO saja" lalu menganggap musik sudah tercakup; tanyakan musiknya, dan
+sarankan **ya** sebagai default saat ada VO.
+
+Kombinasi yang masuk akal:
+
+| VO | Musik | Hasil |
+|---|---|---|
+| generate / rekam | ya | **paling umum**: narasi + bed, musik ducking di bawah suara |
+| generate / rekam | tidak | wawancara atau demo tanpa musik; terasa kering tapi sah |
+| tanpa VO | ya | bumper, opener, mood piece — teks yang membawa cerita |
+| tanpa VO | tidak | slideshow senyap atau video yang akan diberi audio belakangan |
+
+**Pilihan VO "generate" hanya sah bila `GEMINI_API_KEY` ada.** Cek sebelum
 menawarkannya:
 
 ```bash
@@ -60,7 +76,7 @@ menawarkannya:
 
 - **Ada kunci** → tawarkan sebagai pilihan pertama, dengan voice yang
   disarankan untuk topiknya (`Kore` tegas, `Puck` ceria, `Charon`
-  informatif). Jangan menawarkan lalu diam-diam jatuh ke "tanpa suara".
+  informatif). Jangan menawarkan lalu diam-diam jatuh ke "tanpa VO".
 - **Tidak ada kunci** → jangan tawarkan. Sebut di pertanyaan yang sama bahwa
   TTS tidak tersedia di mesin ini, dan tawarkan rekam sendiri sebagai
   gantinya. Jangan menyuruh user memasang kunci sebagai langkah pertama
@@ -71,27 +87,28 @@ menawarkannya:
 
 Kalau user memilih "generate VO", alurnya mengikat dan dijelaskan penuh di
 `references/voiceover.md`: naskah disetujui → `scripts/tts-gemini.py` →
-`scripts/asr-words.py` → `scripts/make-cues.mjs` → timeline → MP4 ber-audio.
-Kalau ia memilih "rekam sendiri", langkah TTS dilewati dan alur masuk di
+`scripts/asr-words.py` → `scripts/make-cues.mjs` → timeline → audio di-mux →
+MP4. Kalau ia memilih "rekam sendiri", langkah TTS dilewati dan alur masuk di
 `asr-words.py` setelah berkas audionya dikirim.
 
 Yang TIDAK ditanya: caption (default tanpa) dan player (default tanpa,
 autoplay + loop).
 
-**Batas nyata tiap pilihan suara** — jangan menawarkan lebih dari yang bisa
+**Batas nyata tiap pilihan** — jangan menawarkan lebih dari yang bisa
 dikerjakan:
 
 | Pilihan | Yang benar-benar terjadi | Yang tetap jadi tugas user |
 |---|---|---|
-| generate VO (Gemini TTS) | `scripts/tts-gemini.py` menulis `audio/voiceover.wav` dari `script.txt` | menyetujui naskah lebih dulu; kuota harian TTS |
-| rekam sendiri | alur sama, hanya lewat TTS; mulai dari `scripts/asr-words.py` | merekam dan mengirim berkas |
-| tanpa suara | video bisu, semua timing dari `DUR0` | — |
-| musik saja | `scripts/make_music.py` membuat bed sintetis dari progresi akor; tidak perlu berkas dari user | tidak ada VO; bed tidak menabrak apa pun, jadi ducking tidak dipakai |
+| VO generate (Gemini TTS) | `scripts/tts-gemini.py` menulis `audio/voiceover.wav` dari `script.txt` | menyetujui naskah lebih dulu; kuota harian TTS |
+| VO rekam sendiri | alur sama, hanya lewat TTS; mulai dari `scripts/asr-words.py` | merekam dan mengirim berkas |
+| tanpa VO | tidak ada narasi; timing dari `CUES.dur` bila ada, selain itu `DUR0` | — |
+| musik dibuatkan | `scripts/make_music.py` menghasilkan bed sintetis (`warm`/`dark`/`bright`) | — |
+| musik kirim sendiri | berkasnya di-levelling dan di-ducking seperti bed buatan sendiri | mengirim berkas dan memastikan hak pakainya |
 
-Musik hanya dibuat oleh `scripts/make_music.py` (sintetis, deterministik) —
-tidak ada unduhan dan tidak ada pertanyaan lisensi. Sebutkan di penyerahan
-bahwa musiknya disintesis, jangan diklaim sebagai musik berlisensi. Ducking
-music-di-bawah-VO dijelaskan di `references/voiceover.md` §9.
+`make_music.py` adalah satu-satunya sumber musik bawaan: sintetis,
+deterministik, tanpa unduhan dan tanpa pertanyaan lisensi. Sebutkan di
+penyerahan bahwa musiknya disintesis, jangan diklaim sebagai musik
+berlisensi. Resep ducking, levelling dan normalisasi ada di `references/voiceover.md` §7–§8.
 
 **Pagar durasi:** ikuti durasi brief dan VO; default tetap ringkas. Jumlah
 adegan ditentukan oleh konteks yang berubah. Beberapa kalimat dapat memakai
@@ -108,12 +125,15 @@ Ada dua jalur, dipilih di langkah nol. Jangan mencampurnya.
 ter-mux. Alurnya di `references/voiceover.md` §1–§7. Yang diserahkan:
 
 - `output/<slug>.mp4` — H.264 + AAC, durasi = `CUES.dur`
-- `audio/voiceover.wav` dan `audio/cues.js` — agar bisa diganti suara lain
+- `audio/voiceover.wav`, `audio/music.wav`, `audio/cues.js` — agar suara atau
+  bed bisa diganti tanpa membangun ulang
 - naskah final di dalam pesan, bukan hanya di berkas
 
-Sebutkan voice yang dipakai dan nilai loudness terukur. Kalau kuota TTS habis
-di tengah jalan, berhenti dan laporkan — jangan menyerahkan video bisu seolah
-itu hasil yang diminta.
+Sebutkan voice yang dipakai, bahwa musiknya disintesis (bila dipakai), dan
+nilai LUFS terukur dari mix akhir. Kalau kuota TTS habis di tengah jalan,
+berhenti dan laporkan — jangan menyerahkan video bisu seolah itu hasil yang
+diminta. Kalau musik diminta tapi tidak jadi dipasang, katakan begitu; video
+tanpa musik yang dijanjikan adalah kekurangan, bukan pilihan.
 
 **Jalur B — user merekam sendiri.** Bangun dengan timing baca → serahkan
 `index.html` + naskah VO **di dalam pesan penutup** → minta user merekam dan

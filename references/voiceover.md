@@ -14,15 +14,27 @@ Read this when the user supplies a voiceover, or asks for one to be generated.
 
 ```
 script → TTS (or user recording) → audio/voiceover.wav → word timing
-      → audio/cues.js → index.html timeline → frames → MP4 (mux audio)
+      → audio/cues.js → index.html timeline → frames
+      ↓
+music bed (optional, most videos) → ducked mix → MP4 (mux audio)
 ```
 
-**This path starts only when the brief said the video carries a voice.** The
-question in `references/explainer.md` ("Langkah nol") offers three real
-options — generate with TTS, user records, or no voice at all. Do not open
-this file for a silent build, and do not quietly turn "generate" into "no
-voice" when a key or quota is missing: say what happened and offer the
-recording route instead.
+Voice and music are two decisions, not one. A narrated video almost always
+wants a bed underneath it — that is what makes it read as finished rather than
+as a screen recording with a voice. Ask for both in the brief
+(`references/explainer.md`, "Langkah nol"); the default when there is a voice is
+music **on**.
+
+| Voice | Music | What it is for |
+|---|---|---|
+| generated / recorded | yes | the common case: narration over a ducked bed |
+| generated / recorded | no | interview or demo; dry but valid |
+| none | yes | bumper, opener, mood piece — text carries the story |
+| none | no | silent slideshow, or audio to be added later |
+
+**This file applies whenever either audio track exists.** A silent build never
+opens it. And do not quietly turn "generate" into "no voice" when a key or
+quota is missing: say what happened and offer the recording route instead.
 
 **Write the script first and get it approved.** Never generate audio for a
 script the user has not read. Audio is the clock for everything after it; a
@@ -264,118 +276,130 @@ sizes; they are measured against the short side, not the long one.
 ## 7. Exporting the MP4 — with sound
 
 `scripts/export-frames.mjs` writes PNGs only. Read `WIDTH` and `HEIGHT` so it
-captures the portrait stage, then mux the audio in the ffmpeg step.
+captures the portrait stage, then build the audio track and mux it.
 
-**The audio must be delayed by `voDelay`, not trimmed.** The cue timings are
-already shifted onto the video timeline, so the audio has to be shifted by the
-same amount or every word lands early and `-shortest` cuts the last line off:
+**Build the mix first, export second.** Doing it in one ffmpeg call means you
+cannot hear the balance before the expensive frame render.
+
+**Step 1 — the audio mix.** A video with voice and music wants both, with the
+music ducked:
+
+```bash
+# music bed, length from CUES.dur (or DUR0 for a silent build)
+python3 scripts/make_music.py --duration 47 --out audio/music.wav
+
+# voice + ducked bed -> one track
+ffmpeg -v error -y -i audio/voiceover.wav -i audio/music.wav \
+  -filter_complex "\
+[1:a]volume=0.30[m];\
+[m][0:a]sidechaincompress=threshold=0.05:ratio=8:attack=20:release=400[duck];\
+[0:a][duck]amix=inputs=2:duration=longest:dropout_transition=0:normalize=0[out]" \
+  -map "[out]" -ar 48000 -ac 2 audio/mix.wav
+```
+
+`normalize=0` is not optional: without it `amix` divides by the input count and
+the whole mix drops ~10 dB. Measured on a 20 s test, the bed sat 6.5 dB lower
+under speech and returned between sentences.
+
+No music, voice only → skip the filter and use `audio/voiceover.wav` directly.
+Music only → skip this step and use `audio/music.wav`.
+
+**Step 1b — measure the mix and bring it into band.** The summed mix never
+lands on target by itself; measured on a 20 s test it came out −21.2 LUFS,
+below the band in §8. Normalise the mix, not the pieces:
+
+```bash
+ffmpeg -i audio/mix.wav -af loudnorm=print_format=summary -f null -   # read the number
+
+ffmpeg -v error -y -i audio/mix.wav -af loudnorm=I=-16:TP=-1.5:LRA=11 \
+  -ar 48000 -ac 2 audio/mix-norm.wav                                  # only if out of band
+```
+
+Same test after the second command: −15.9 LUFS. Export with `mix-norm.wav`
+when you normalised; use `mix.wav` when it was already in band. Report the
+number either way.
+
+**Step 2 — the delay.** The cue timings are already shifted onto the video
+timeline, so the audio must be shifted by the same amount or every word lands
+early and `-shortest` cuts the last line off:
+
+```bash
+DELAY_MS=$(node -e "console.log(Math.round((window.CUES?.voDelay ?? 1)*1000))" 2>/dev/null || echo 1000)
+```
+
+Use the `voDelay` in `audio/cues.js`, not the literal 1000. With no voiceover
+there is no delay to compensate for: set `DELAY_MS=0` (and pass `--no-delay`
+to `make-cues.mjs` so the timings themselves start at zero).
+
+**Step 3 — render and mux.**
 
 ```bash
 npm i puppeteer
 python -m http.server 5178 &
 
-DELAY_MS=$(node -e "console.log(Math.round((window.CUES?.voDelay ?? 1)*1000))" 2>/dev/null || echo 1000)
-
 WIDTH=1080 HEIGHT=1920 FPS=30 node scripts/export-frames.mjs
 
-ffmpeg -framerate 30 -i frames/f%05d.png -i audio/voiceover.wav \
+# MIX=audio/mix-norm.wav when step 1b normalised, otherwise audio/mix.wav
+MIX=audio/mix-norm.wav
+
+ffmpeg -framerate 30 -i frames/f%05d.png -i "$MIX" \
   -af "adelay=${DELAY_MS}:all=1,apad" \
   -c:v libx264 -pix_fmt yuv420p -crf 16 \
   -c:a aac -b:a 192k -shortest output/<slug>.mp4
 ```
 
-Read `voDelay` from `audio/cues.js` and use that number, not the literal 1000
-above. `adelay` shifts the voice later; `apad` then pads silence so `-shortest`
-ends on the last *video* frame instead of the last *audio* sample.
+`adelay` shifts the audio later; `apad` then pads silence so `-shortest` ends
+on the last **video** frame instead of the last **audio** sample.
 
 Measured on a 20.6 s portrait build with `voDelay: 1.0`: without the delay the
 file came out 19.6 s and the final sentence was clipped; with it, 20.6 s and
 every word present. Always `ffprobe` the result and compare against
 `CUES.dur`.
 
-If the page is served over `file://` there is no server to poll, but the
-audio still needs muxing — the command above does not change.
+If the page is served over `file://` there is no server to poll, but the audio
+still needs muxing — the commands above do not change.
 
 ## 8. Loudness — not optional
 
 A platform targets **I ∈ [−17, −14] LUFS, true peak ≤ −1 dBTP**. A quiet mix
-passes every visual check and still plays badly everywhere, so measure it and
-report the number:
+passes every visual check and still plays badly everywhere.
 
-```bash
-ffmpeg -i audio/voiceover.wav -af loudnorm=print_format=summary -f null -
-```
+**Measure the finished mix, not the voice track.** The summing in §7 always
+changes the level — a 20 s test came out −21.2 LUFS from a voice that was
+already in band on its own. The measure-and-normalise step is §7 step 1b;
+there is no separate voice-only correction to apply.
 
-If it falls outside the band, normalise before export:
+Report the measured value in the delivery message. A build without a number is
+a build nobody verified.
 
-```bash
-ffmpeg -y -i audio/voiceover.wav -af loudnorm=I=-16:TP=-1.5:LRA=11 \
-  -ar 48000 -ac 1 audio/vo-norm.wav
-```
+## 9. Music bed — what make_music.py actually gives you
 
-Then export with `audio/vo-norm.wav`, and say the measured value in the
-delivery message.
-
-## 9. Music bed — synthesised, not licensed
-
-When the brief asks for music, generate it. No download, no licence question,
-no CDN that may vanish:
+The command and the ducking recipe are in §7. This section is only what you
+need in order to choose and to describe it honestly.
 
 ```bash
 python3 scripts/make_music.py --duration 47 --out audio/music.wav
 python3 scripts/make_music.py --duration 47 --out audio/music.wav --tempo 92 --mood bright
 ```
 
-`--duration` must cover the finished video, so take it from `CUES.dur` (or the
-`DUR0` of a silent build), not from the script length. Moods: `warm`
-(Am–F–C–G, editorial, sits under speech), `dark` (Dm–B♭–F–C, history and
-analysis), `bright` (C–Em–Am–G, light explainers). Default 84 bpm.
+`--duration` must cover the finished video — take it from `CUES.dur`, not from
+the script length. Moods: `warm` (Am–F–C–G, editorial, sits under speech),
+`dark` (Dm–B♭–F–C, history and analysis), `bright` (C–Em–Am–G, light
+explainers). Default 84 bpm, 48 kHz stereo, peak −6 dBFS.
 
-The script gives you a pad, a bass, an arpeggio and a breath at each chord
-change — a progression with a pulse, not a composition. **Say it is
-synthesised** in the delivery; do not present it as licensed music.
+The output is a pad, a bass, an arpeggio and a breath at each chord change — a
+progression with a pulse, not a composition. **Say it is synthesised** in the
+delivery; do not present it as licensed music.
 
-It is a bed, not a score: it does not hit marks and has no intro or outro
-sting. If the video needs a hit on a specific beat, place that with a separate
-short sound, not by regenerating the whole track.
+It is a bed, not a score: no intro sting, no outro, no hit on a specific beat.
+If a video needs an accent on one moment, place a short sound there rather
+than regenerating the track.
 
-### Ducking: the music must get out of the way
-
-A bed at a fixed level fights the voice. Sidechain it so the music drops while
-someone is speaking. Measured on a 20 s test (voice −19.5 dBFS, bed −18.1):
-
-```bash
-ffmpeg -v error -y -i audio/voiceover.wav -i audio/music.wav   -filter_complex "[1:a]volume=0.30[m];[m][0:a]sidechaincompress=threshold=0.05:ratio=8:attack=20:release=400[duck];[0:a][duck]amix=inputs=2:duration=longest:dropout_transition=0:normalize=0[out]"   -map "[out]" -ar 48000 -ac 2 audio/mix.wav
-```
-
-Two things that are easy to get wrong:
-
-- **`normalize=0` is required.** Without it `amix` divides each input by the
-  number of inputs and the whole mix drops ~10 dB.
-- **`volume=0.30` before the compressor, not after.** That is what sets the
-  bed level; the compressor only decides how far it ducks.
-
-Result of the command above, measured: speech −22.3 dBFS, gaps −28.8 dBFS — the
-bed sits ~6.5 dB lower under the voice and comes back between sentences.
-
-Then loudness-check `audio/mix.wav`, not the pieces, and export with it:
-
-```bash
-ffmpeg -i audio/mix.wav -af loudnorm=print_format=summary -f null -
-```
-
-### Music only, no voice
-
-Same bed, no ducking needed:
-
-```bash
-python3 scripts/make_music.py --duration 30 --out audio/music.wav
-ffmpeg -framerate 30 -i frames/f%05d.png -i audio/music.wav   -c:v libx264 -pix_fmt yuv420p -crf 16 -c:a aac -b:a 192k -shortest output/<slug>.mp4
-```
-
-No `adelay` here — with no voiceover there is no `voDelay` to compensate for.
-If `CUES` exists but the build deliberately has no voiceover, pass
-`--no-delay` to `make-cues.mjs` so its timings start at zero.
+If the user sends their own music, it goes through the same `volume` +
+`sidechaincompress` treatment in §7 — the ducking is what makes any bed sit
+under a voice, not something specific to the generated one. Ask them to
+confirm the licence; this skill ships no music library and can make no claim
+about theirs.
 
 ## 10. When any of this is skipped
 

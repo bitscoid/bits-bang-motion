@@ -335,17 +335,20 @@ bagian 1 dan 1b. Ringkasnya:
    benar-benar tidak bisa diturunkan dari brief (rasio, durasi, ada
    musik/VO atau tidak), dalam satu pertanyaan.
 
-   Pilihan suara mencakup **generate VO dengan Gemini TTS**, bukan hanya
-   "menyusul" — tapi tawarkan itu hanya bila `GEMINI_API_KEY` ada; cek dulu,
-   jangan menawarkan lalu jatuh diam-diam ke video bisu. Rinciannya di
-   `references/explainer.md` ("Batas nyata tiap pilihan suara").
+   **VO dan musik latar adalah dua pertanyaan terpisah**, bukan satu daftar
+   pilihan. Video bernarasi hampir selalu lebih baik dengan bed di bawahnya;
+   sarankan musik **ya** sebagai default saat ada VO. VO "generate" hanya
+   ditawarkan bila `GEMINI_API_KEY` ada — cek dulu, jangan menawarkan lalu
+   jatuh diam-diam ke video bisu. Rinciannya di `references/explainer.md`
+   ("Empat hal lain", "Batas nyata tiap pilihan").
 0b. **Tulis style brief** (Hukum #3) dan tunjukkan bersama rundown. Tanpa
    style brief yang disetujui, jangan menyentuh kode.
-0c. **Bila ada suara, baca `references/voiceover.md` sebelum menulis kode.**
-   Urutannya mengikat: naskah disetujui → TTS/rekaman → `audio/voiceover.wav`
-   → `scripts/asr-words.py` → `scripts/make-cues.mjs` → baru timeline. Audio
-   adalah jamnya; naskah yang berubah setelah audio dibuat memindahkan setiap
-   tween. Tanpa suara, lewati langkah ini dan durasi tetap dari `DUR0`.
+0c. **Bila ada VO atau musik, baca `references/voiceover.md` sebelum menulis
+   kode.** Urutannya mengikat: naskah disetujui → TTS/rekaman →
+   `audio/voiceover.wav` → `scripts/asr-words.py` → `scripts/make-cues.mjs`
+   → timeline → bed musik → mix ber-ducking → MP4. Audio adalah jamnya;
+   naskah yang berubah setelah audio dibuat memindahkan setiap tween. Tanpa
+   kedua track, lewati langkah ini dan durasi tetap dari `DUR0`.
 1. **Serap referensi & sumber brand.** Minta screenshot/potongan video
    referensi bila ada; petakan per shot (durasi, gerakan, jenis transisi,
    urutan atensi) — hanya RITMENYA, bukan kulitnya (Hukum #3). Warna, logo
