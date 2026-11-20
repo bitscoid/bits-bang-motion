@@ -19,5 +19,17 @@ copyright notice stay exactly as published.
 - `upstream` is kept as a second git remote so `git diff upstream/main` still
   shows the full delta against the original.
 
-Nothing else is altered: references, scripts, assets, style rules and the
-workflow are as upstream published them at v1.19.0.
+## Fork additions (not from upstream)
+
+- `references/voiceover.md` — the narrated-video path: script, TTS, word
+  timing, `?ratio=9x16`, audio muxing.
+- `scripts/tts-gemini.py`, `scripts/asr-words.py`, `scripts/make-cues.mjs` —
+  new tools for that path.
+- Every starter reads `?ratio=9x16`, takes `DUR` from `CUES.dur`, and centres
+  the camera on `W/2, H/2`. `starter-explainer-jurnalisme.html` also carries
+  `saySync` as a worked example.
+- `scripts/export-frames.mjs` takes `WIDTH`/`HEIGHT`; `snap.mjs` and
+  `export-frames.mjs` pass `--no-sandbox` so Chrome starts as root.
+
+Everything else — references, style rules, the workflow, the remaining
+assets — is as upstream published it at v1.19.0.
