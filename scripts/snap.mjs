@@ -29,7 +29,7 @@ const [outDir, ...times] = process.argv.slice(2);
 if (!outDir || !times.length) { console.log('pakai: node snap.mjs <folder-output> <detik> [<detik> ...]'); process.exit(1); }
 const URL = process.env.URL || pathToFileURL(process.cwd()).href + '/index.html?clean=1';
 await mkdir(outDir, { recursive: true });
-const browser = await puppeteer.launch({ headless: 'new', args: ['--enable-gpu', '--use-gl=angle', '--enable-webgl', '--ignore-gpu-blocklist', '--autoplay-policy=no-user-gesture-required'] });
+const browser = await puppeteer.launch({ headless: 'new', args: ['--enable-gpu', '--use-gl=angle', '--enable-webgl', '--ignore-gpu-blocklist', '--autoplay-policy=no-user-gesture-required', '--no-sandbox', '--disable-setuid-sandbox'] });
 const page = await browser.newPage();
 page.on('pageerror', e => console.log('PAGEERROR', e.message));
 await page.goto(URL, { waitUntil: 'networkidle0' });

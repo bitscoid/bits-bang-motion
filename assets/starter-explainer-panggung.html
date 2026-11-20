@@ -30,7 +30,17 @@ html,body{margin:0;height:100%;background:#1D303C;overflow:hidden}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 <script>
 const $=(s,r=document)=>r.querySelector(s);
-const W=1920,H=1080,DUR=12,NS='http://www.w3.org/2000/svg',XL='http://www.w3.org/1999/xlink';
+/* ---------- rasio: ?ratio=9x16 untuk portrait, default 16:9 ---------- */
+const RATIO = new URLSearchParams(location.search).get('ratio');
+const PORTRAIT = RATIO === '9x16' || RATIO === '9:16';
+const W = PORTRAIT ? 1080 : 1920;
+const H = PORTRAIT ? 1920 : 1080;
+$('#stage').style.width  = W + 'px';
+$('#stage').style.height = H + 'px';
+const DUR0 = 12;
+
+const DUR = (window.CUES?.dur ?? DUR0);
+const NS='http://www.w3.org/2000/svg',XL='http://www.w3.org/1999/xlink';
 /* palet flat cerah — ganti dari tema, tapi tetap TANPA tekstur */
 const C={cream:'#FFF3DC',white:'#FFFDF5',navy:'#345867',deep:'#172E3C',teal:'#237C80',mint:'#8DD3C3',blue:'#5AABB8',gold:'#F4BC52',
   coral:'#E0714F',rust:'#C86545',ink:'#263746',grass:'#B9CD8E',grass2:'#9DB874',sand:'#E6D5AC',sand2:'#D6BF8E',skin:'#CB895F',
@@ -54,8 +64,8 @@ const defsS=N('defs',{},S),grad=N('linearGradient',{id:'skyG',x1:0,y1:0,x2:0,y2:
 
 /* ---------- panggung: satu frame per adegan, kamera sendiri ---------- */
 const scenes=[];
-function scene(name){const g=G({'data-name':name},S);g.style.display='none';const sc={name,g,cam:{x:960,y:540,z:1.1,ox:0,oy:0},
-  apply(){const c=sc.cam;g.setAttribute('transform',`translate(${960-(c.x+c.ox)*c.z},${540-(c.y+c.oy)*c.z}) scale(${c.z})`);}};sc.apply();scenes.push(sc);return sc;}
+function scene(name){const g=G({'data-name':name},S);g.style.display='none';const sc={name,g,cam:{x:W/2,y:H/2,z:1.1,ox:0,oy:0},
+  apply(){const c=sc.cam;g.setAttribute('transform',`translate(${W/2-(c.x+c.ox)*c.z},${H/2-(c.y+c.oy)*c.z}) scale(${c.z})`);}};sc.apply();scenes.push(sc);return sc;}
 const skyOf=(p,y0=-1400,y1=1080)=>R(-600,y0,3200,y1-y0,'url(#skyG)',0,p);
 const hillsOf=(p,b)=>PA(`M-600 ${b} L-200 ${b-140} L300 ${b-60} L800 ${b-200} L1300 ${b-90} L1800 ${b-180} L2500 ${b-70} L2500 1400 L-600 1400 Z`,C.hill,p);
 const groundOf=(p,gy)=>{R(-600,gy+18,3200,600,C.sand,0,p);R(-600,gy,3200,26,C.grass2,0,p);R(-600,gy-6,3200,14,C.grass,0,p);};
@@ -154,9 +164,9 @@ rot(P1.w.Rarm,.6,-72,.7);rot(P1.w.Rfore,.7,-18,.8);rot(P1.w.head,.6,7,.8);      
 cam(P1,.5,900,640,1.4,2.2,'power2.inOut');                                              // tahan → satu gerak → tahan
 walk(P1.w,3.2,1.56,220);face(P1.w,'kaget',4.9);
 slide(5.8,P1,P2,'x',96);                                                                 // geser 96 px ke panggung 2
-P2.cam.x=960;P2.cam.y=520;P2.cam.z=1.1;P2.apply();spin(P2.roofFan,5.8,1.1);flowAlong(P2.drops,P2.feedPath,5.8,2.2);
+P2.cam.x=W/2;P2.cam.y=H/2;P2.cam.z=1.1;P2.apply();spin(P2.roofFan,5.8,1.1);flowAlong(P2.drops,P2.feedPath,5.8,2.2);
 P2.puffs.forEach((p,i)=>drift(p,5.8+((i*.29)%1)*4,{y:-420,scale:1.5,dur:4,peak:.85}));
-cam(P2,6.6,960,660,1.42,1.6,'power2.inOut');tl.set(P2.racks,{opacity:1},7.2);tl.to(P2.wall,{y:-560,duration:.9,ease:'power3.inOut'},7.2);
+cam(P2,6.6,W/2,H/2+120,1.42,1.6,'power2.inOut');tl.set(P2.racks,{opacity:1},7.2);tl.to(P2.wall,{y:-560,duration:.9,ease:'power3.inOut'},7.2);
 P2.lights.forEach((l,i)=>{const at=7.8+i*.035;tl.to(l,{opacity:1,duration:.1,ease:'none'},at);tl.to(l,{keyframes:{opacity:[1,.3,1,.55,1],easeEach:'none'},duration:1.5,repeat:-1,ease:'none'},at+.1);});
 P2.fans.forEach((f,i)=>spin(f,8.0+i*.08,.85));
 tl.to({},{duration:.01},DUR);

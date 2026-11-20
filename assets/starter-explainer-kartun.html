@@ -69,7 +69,16 @@ html,body{margin:0;height:100%;background:#0a0a0a;overflow:hidden}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 <script>
 const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>[...r.querySelectorAll(s)];
-const W=1920,H=1080,DUR=18;
+/* ---------- rasio: ?ratio=9x16 untuk portrait, default 16:9 ---------- */
+const RATIO = new URLSearchParams(location.search).get('ratio');
+const PORTRAIT = RATIO === '9x16' || RATIO === '9:16';
+const W = PORTRAIT ? 1080 : 1920;
+const H = PORTRAIT ? 1920 : 1080;
+$('#stage').style.width  = W + 'px';
+$('#stage').style.height = H + 'px';
+const DUR0 = 18;                                   /* durasi awal; CUES.dur menimpanya */
+
+const DUR = (window.CUES?.dur ?? DUR0);
 function fit(){const s=Math.min(innerWidth/W,innerHeight/H);$('#stage').style.transform=`translate(-50%,-50%) scale(${s})`;}
 addEventListener('resize',fit);fit();
 
@@ -108,10 +117,10 @@ const label=(sel,at)=>tl.fromTo($(sel),{opacity:0,y:14},{opacity:1,y:0,duration:
 const unlabel=(sel,at)=>tl.to($(sel),{opacity:0,duration:.25},at);
 
 /* ---------- kamera: rig #world, semua gerak adegan lewat sini ---------- */
-const C={x:960,y:540,z:1};
-function applyCam(){rig.style.transform=`translate(${960-C.x*C.z}px,${540-C.y*C.z}px) scale(${C.z})`;}
+const C={x:W/2,y:H/2,z:1};
+function applyCam(){rig.style.transform=`translate(${W/2-C.x*C.z}px,${H/2-C.y*C.z}px) scale(${C.z})`;}
 const look=(at,x,y,z,dur=1.6,ease='sine.inOut')=>tl.to(C,{x,y,z,duration:dur,ease,onUpdate:applyCam},at);   // meluncur ke aset lain
-const home=(at,x=960,y=540,dur=1.2)=>look(at,x,y,1,dur,'power2.inOut');                                       // zoom out ke frame adegan, lalu DIAM
+const home=(at,x=W/2,y=H/2,dur=1.2)=>look(at,x,y,1,dur,'power2.inOut');                                       // zoom out ke frame adegan, lalu DIAM
 const into=(cutAt,x,y,z)=>tl.to(C,{x,y,z,duration:.9,ease:'power2.in',onUpdate:applyCam},cutAt-.9);          // push-through sebelum cut
 const settle=(cutAt,x,y,z)=>tl.to(C,{x,y,z:z*.94,duration:1.1,ease:'power3.out',onUpdate:applyCam},cutAt);   // mendarat setelah cut
 const breath=(a,b,z)=>tl.to(C,{z,duration:b-a,ease:'sine.inOut',onUpdate:applyCam},a);                       // napas halus saat "diam"

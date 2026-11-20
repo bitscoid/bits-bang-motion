@@ -73,7 +73,17 @@ html,body{margin:0;height:100%;background:#0a0f1e;overflow:hidden}
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 <script>
-const W=1920,H=1080,DUR=22;
+/* ---------- rasio: ?ratio=9x16 untuk portrait, default 16:9 ---------- */
+const RATIO = new URLSearchParams(location.search).get('ratio');
+const PORTRAIT = RATIO === '9x16' || RATIO === '9:16';
+const W = PORTRAIT ? 1080 : 1920;
+const H = PORTRAIT ? 1920 : 1080;
+$('#stage').style.width  = W + 'px';
+$('#stage').style.height = H + 'px';
+const DUR0 = 22;
+
+const DUR = (window.CUES?.dur ?? DUR0);
+
 const $=s=>document.querySelector(s), NS='http://www.w3.org/2000/svg';
 function S(tag,attrs={},parent){const e=document.createElementNS(NS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);if(parent)parent.appendChild(e);return e;}
 const T=(txt,x,y,attrs,parent)=>{const e=S('text',{x,y,...attrs},parent);e.textContent=txt;return e;};
@@ -120,10 +130,10 @@ function renderMap(t){const q=smooth((t-MAP_T0)/3.2),e=smooth((t-MAP_T0)/3.4);ro
   const cx=pt.x+(1000-pt.x)*e,cy=pt.y+(560-pt.y)*e,z=2.3+(1-2.3)*e;mapCam.setAttribute('transform',`translate(960 540) scale(${z}) translate(${-cx} ${-cy})`);}
 
 /* ---------- MODE KOLASE: kamera berkoreografi di atas dunia diam ---------- */
-const C={x:960,y:540,z:1};const colWorld=$('#colWorld');
-function applyCam(){colWorld.style.transform=`translate(${960-C.x*C.z}px,${540-C.y*C.z}px) scale(${C.z})`;}
+const C={x:W/2,y:H/2,z:1};const colWorld=$('#colWorld');
+function applyCam(){colWorld.style.transform=`translate(${W/2-C.x*C.z}px,${H/2-C.y*C.z}px) scale(${C.z})`;}
 const look=(at,x,y,z,dur=1.6,ease='sine.inOut')=>tl.to(C,{x,y,z,duration:dur,ease,onUpdate:applyCam},at);   // meluncur ke aset lain
-const home=(at,dur=1.2)=>look(at,960,540,1,dur,'power2.inOut');                                              // zoom out, lalu DIAM
+const home=(at,dur=1.2)=>look(at,W/2,H/2,1,dur,'power2.inOut');                                              // zoom out, lalu DIAM
 const into=(cutAt,x,y,z)=>tl.to(C,{x,y,z,duration:.9,ease:'power2.in',onUpdate:applyCam},cutAt-.9);          // push-through sebelum cut
 const settle=(cutAt,x,y,z)=>tl.to(C,{x,y,z:z*.94,duration:1.1,ease:'power3.out',onUpdate:applyCam},cutAt);   // mendarat setelah cut
 /* aset masuk dengan blur berarah lalu TETAP hidup (ayunan +-25 px / 1,5 dtk + putaran) */

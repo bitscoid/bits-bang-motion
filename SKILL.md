@@ -336,6 +336,11 @@ bagian 1 dan 1b. Ringkasnya:
    musik/VO atau tidak), dalam satu pertanyaan.
 0b. **Tulis style brief** (Hukum #3) dan tunjukkan bersama rundown. Tanpa
    style brief yang disetujui, jangan menyentuh kode.
+0c. **Bila ada suara, baca `references/voiceover.md` sebelum menulis kode.**
+   Urutannya mengikat: naskah disetujui → TTS/rekaman → `audio/voiceover.wav`
+   → `scripts/asr-words.py` → `scripts/make-cues.mjs` → baru timeline. Audio
+   adalah jamnya; naskah yang berubah setelah audio dibuat memindahkan setiap
+   tween. Tanpa suara, lewati langkah ini dan durasi tetap dari `DUR0`.
 1. **Serap referensi & sumber brand.** Minta screenshot/potongan video
    referensi bila ada; petakan per shot (durasi, gerakan, jenis transisi,
    urutan atensi) — hanya RITMENYA, bukan kulitnya (Hukum #3). Warna, logo
@@ -551,3 +556,7 @@ dan buat layer dari belakang ke depan. Build 10 panggung ≈ 1 jam, 0 kredit.
 | `scripts/snap.mjs` | VERIFIKASI: potret detik kunci → lembar kontak (opsional, butuh Node + puppeteer) |
 | `scripts/vo-pauses.html` | deteksi jeda VO di browser (pengganti ffmpeg silencedetect, tanpa instal) |
 | `scripts/export-frames.mjs` | EXPORT: render semua frame → MP4, hanya bila diminta (opsional, butuh Node + puppeteer + ffmpeg) |
+| `references/voiceover.md` | ALUR VO: naskah → Gemini TTS → word timing → `audio/cues.js` → `saySync` → MP4 ber-audio; termasuk `?ratio=9x16` dan kewajiban ukur loudness |
+| `scripts/tts-gemini.py` | TTS: `script.txt` → `audio/voiceover.wav` (model & payload dari bits-motion §3, error & kuota sudah ditangani) |
+| `scripts/asr-words.py` | ASR: `audio/voiceover.wav` → `audio/words.json` per kata, `text_display` diselaraskan ke `script.txt` |
+| `scripts/make-cues.mjs` | `audio/words.json` → `audio/cues.js` (dimuat lewat `<script>`, jadi tetap jalan di `file://`) |

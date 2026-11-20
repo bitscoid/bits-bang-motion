@@ -67,9 +67,21 @@ html,body{margin:0;height:100%;background:#0a0a0a;overflow:hidden}
 <audio id="vo" src="" preload="auto"></audio>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<!-- timing kata dari audio/cues.js; dibuat oleh scripts/make-cues.mjs. Tanpa berkas ini,
+     window.CUES tetap undefined, baris memakai say() dan durasi jatuh ke DUR0. -->
+<script src="audio/cues.js"></script>
 <script>
 const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>[...r.querySelectorAll(s)];
-const W=1920,H=1080,DUR=18;
+/* ---------- rasio: ?ratio=9x16 untuk portrait, default 16:9 ---------- */
+const RATIO = new URLSearchParams(location.search).get('ratio');
+const PORTRAIT = RATIO === '9x16' || RATIO === '9:16';
+const W = PORTRAIT ? 1080 : 1920;
+const H = PORTRAIT ? 1920 : 1080;
+$('#stage').style.width  = W + 'px';
+$('#stage').style.height = H + 'px';
+const DUR0 = 18;                                   /* durasi awal; CUES.dur menimpanya */
+
+const DUR = (window.CUES?.dur ?? DUR0);
 function fit(){const s=Math.min(innerWidth/W,innerHeight/H);$('#stage').style.transform=`translate(-50%,-50%) scale(${s})`;}
 addEventListener('resize',fit);fit();
 
@@ -93,6 +105,16 @@ const say=(sel,at,{dur=.55,st=.08,mode='up'}={})=>{const el=$(sel),ws=words(el);
   else tl.fromTo(ws,{opacity:0,yPercent:60,scaleY:1.25},{opacity:1,yPercent:0,scaleY:1,duration:dur,ease:'power4.out',stagger:st,immediateRender:false},at);
   blurTween(tl,el,at,22,0,dur+st*ws.length,VERT);
   $$('.hl i',el).forEach((h,i)=>tl.fromTo(h,{scaleX:0},{scaleX:1,duration:.4,ease:'power3.out',immediateRender:false},at+st*ws.length+.2+i*.2));};
+/* saySync: tiap kata masuk di detik katalnya sendiri dari audio/cues.js, bukan stagger dekoratif.
+   Pakai ini untuk baris yang kalimatnya ada di CUES; sisanya tetap pakai say(). */
+const saySync=(sel,seg,{dur=.42}={})=>{let el=typeof sel==='string'?$(sel):sel,ws=words(el);
+  tl.set(el,{opacity:1},seg.start-.05);
+  seg.words.forEach((cue,i)=>{const sp=ws[i];if(!sp)return;               /* ASR & markup beda: lewati, jangan menebak */
+    tl.fromTo(sp,{opacity:0,yPercent:60,scaleY:1.25},
+      {opacity:1,yPercent:0,scaleY:1,duration:dur,ease:'power4.out',immediateRender:false},cue.t);});
+  blurTween(tl,el,seg.start-.05,22,0,dur+.3,VERT);
+  const lastE=(seg.words[seg.words.length-1]||{}).e??seg.end;
+  $$('.hl i',el).forEach((h,i)=>tl.fromTo(h,{scaleX:0},{scaleX:1,duration:.4,ease:'power3.out',immediateRender:false},lastE+.2+i*.2));};
 const unsay=(sel,at,{dur=.3}={})=>{const el=$(sel),ws=words(el);tl.to(ws,{opacity:0,yPercent:-50,duration:dur,ease:'power2.in',stagger:.02},at);
   blurTween(tl,el,at,0,30,dur+.1,{ease:'power2.in',...VERT});tl.set(el,{opacity:0},at+dur+.15);};
 /* aset: masuk dengan kabut searah + TETAP hidup (ayunan ±25 px / 1,5 dtk + putaran) */
@@ -108,10 +130,10 @@ const label=(sel,at)=>tl.fromTo($(sel),{opacity:0,y:14},{opacity:1,y:0,duration:
 const unlabel=(sel,at)=>tl.to($(sel),{opacity:0,duration:.25},at);
 
 /* ---------- kamera: rig #world, semua gerak adegan lewat sini ---------- */
-const C={x:960,y:540,z:1};
-function applyCam(){rig.style.transform=`translate(${960-C.x*C.z}px,${540-C.y*C.z}px) scale(${C.z})`;}
+const C={x:W/2,y:H/2,z:1};
+function applyCam(){rig.style.transform=`translate(${W/2-C.x*C.z}px,${H/2-C.y*C.z}px) scale(${C.z})`;}
 const look=(at,x,y,z,dur=1.6,ease='sine.inOut')=>tl.to(C,{x,y,z,duration:dur,ease,onUpdate:applyCam},at);   // meluncur ke aset lain
-const home=(at,x=960,y=540,dur=1.2)=>look(at,x,y,1,dur,'power2.inOut');                                       // zoom out ke frame adegan, lalu DIAM
+const home=(at,x=W/2,y=H/2,dur=1.2)=>look(at,x,y,1,dur,'power2.inOut');                                       // zoom out ke frame adegan, lalu DIAM
 const into=(cutAt,x,y,z)=>tl.to(C,{x,y,z,duration:.9,ease:'power2.in',onUpdate:applyCam},cutAt-.9);          // push-through sebelum cut
 const settle=(cutAt,x,y,z)=>tl.to(C,{x,y,z:z*.94,duration:1.1,ease:'power3.out',onUpdate:applyCam},cutAt);   // mendarat setelah cut
 const breath=(a,b,z)=>tl.to(C,{z,duration:b-a,ease:'sine.inOut',onUpdate:applyCam},a);                       // napas halus saat "diam"
