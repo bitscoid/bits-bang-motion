@@ -1,9 +1,7 @@
 # Voiceover — script, TTS, word timing
 
-Only what differs from `bits-motion`. The TTS payload, the ASR recipe and the
-`words.json` shape are **not** repeated here: they live in
-`bits-motion/references/RENDER.md` §3 and are the single source of truth for
-those steps. This file covers what is specific to a browser build:
+Everything a narrated build needs, in this skill. No other skill has to be
+installed to follow it.
 
 - how a word timestamp becomes a GSAP tween (`saySync`)
 - how `DUR` stops being a constant
@@ -35,37 +33,97 @@ TTS model reads text verbatim and will speak them aloud.
 
 ## 2. Generating the voice
 
-Follow `bits-motion/references/RENDER.md` §3 **"When there is no voiceover"**
-in full — payload shape, the `json.dumps` rule, the response parser, the
-`INVALID_ARGUMENT` table, the voice list, the quota rule, the duration sanity
-check.
-
-Two additions for this skill:
+Run the script. It builds the payload, handles the model fallback, parses the
+response and checks the result against the script:
 
 ```bash
-# the project needs audio/ before work/ is useful
-mkdir -p audio work
+export GEMINI_API_KEY=...            # required; never invent a voice without it
+python3 scripts/tts-gemini.py        # script.txt -> audio/voiceover.wav
+python3 scripts/tts-gemini.py --voice Puck --style "bright, playful"
+```
 
-# normalise to the one format every later step assumes
-ffmpeg -v error -y -i work/tts.wav -ar 48000 -ac 1 "audio/voiceover.wav"
+Defaults: `gemini-3.8-flash-tts`, voice `Kore`, style
+`warm, clear, slightly upbeat`. Working voices — `Kore` (firm), `Puck`
+(bright), `Charon` (informative), `Zephyr` (clear), `Leda` (young/female).
+Names are case-sensitive. Say which one you used in the delivery.
 
-# measure it before trusting any estimate
+What the script gets right that a hand-rolled call does not:
+
+| Trap | What it does |
+|---|---|
+| Script inlined into `curl -d` | builds the payload with `json.dumps`, so quotes and newlines stay valid |
+| Instructions written inside `text` | sends verbatim prose only; delivery lives in `annotations[].style` |
+| `[Hook]`, `## Adegan` spoken aloud | those never reach `script.txt` — the model reads text verbatim |
+| Daily quota hit | falls back to `gemini-3.8-flash-lite-tts`, a separate quota |
+| Length nothing like the script | warns when the duration misses the word-count estimate by more than 35% |
+| Raw PCM from an older model | decodes 24 kHz s16le, then writes 48 kHz mono |
+
+On failure the full API response is left in `work/tts-response.json`:
+
+- `No matching speaker voice found for name: X` → wrong voice name
+- `Invalid JSON payload received` → the script prevents this; if it appears,
+  something edited the request file
+- `RESOURCE_EXHAUSTED` on both models → the daily quota is gone; ask the user
+  to record the script and say so plainly
+
+**Check the result before moving on:**
+
+```bash
 ffprobe -v error -show_entries format=duration -of csv=p=0 "audio/voiceover.wav"
 ```
 
+Compare with `words ÷ 2.5` (roughly Indonesian narration speed). A large gap
+means non-script text was spoken, or the script was cut short. Regenerate
+once; if it still makes no sense, tell the user instead of continuing.
+
 **Duration cap.** This skill has no cap of its own; take the one the user
-approved in the brief. As in `bits-motion`, portrait (9:16) and landscape
-(16:9) are different products, not a preference — a 5-minute portrait clip is
-unwatchable in a feed, and a 60-second landscape explainer under-delivers its
-format. If the generated audio overruns the agreed length, cut the script and
-regenerate. Never speed up the audio to fit.
+approved in the brief. Portrait (9:16) and landscape (16:9) are different
+products, not a preference — a 5-minute portrait clip is unwatchable in a
+feed, and a 60-second landscape explainer under-delivers its format. If the
+audio overruns the agreed length, cut the script and regenerate. Never speed
+up the audio to fit.
+
+**No API key, or the user wants their own voice:** ask them to record
+`script.txt` and send the file. Normalise it the same way and continue from
+§3 — nothing downstream cares where the audio came from.
+
+```bash
+ffmpeg -v error -y -i <their-file> -ar 48000 -ac 1 "audio/voiceover.wav"
+```
 
 ## 3. Word timing
 
-Run the `bits-motion/references/RENDER.md` §3 ASR recipe (faster-whisper,
-`word_timestamps=True`, float32 numpy at 16 kHz — **not** a file path) and
-write `audio/words.json` exactly as that section specifies, including
-`text_display` and `vo_delay`.
+```bash
+python3 scripts/asr-words.py                 # audio/voiceover.wav -> audio/words.json
+python3 scripts/asr-words.py --lang id       # pin it; unset = auto-detect
+```
+
+What it produces, and why each field exists:
+
+```json
+{ "vo_delay": 1.0, "language": "id",
+  "segments": [
+    { "start": 0.2, "end": 4.6,
+      "text": "anak bukan kertas kosong",
+      "text_display": "Anak bukan kertas kosong.",
+      "words": [{ "word": "anak", "start": 0.2, "end": 0.65 }] }
+  ] }
+```
+
+- `text` stays exactly as recognised. Only its **boundaries** matter, and
+  correcting the spelling there would hide a bad transcription instead of
+  surfacing it.
+- `text_display` is aligned back to `script.txt`, so subtitles and on-screen
+  text carry the words you approved, not the ones Whisper heard.
+- `vo_delay` is the lead-in before the first word on the video timeline. Keep
+  it as one constant and derive every time from it — never add it per scene.
+- `audio/`, not `work/`. Re-running ASR after a cleanup returns timestamps
+  that differ by ~±0.1 s, which silently desyncs a re-render. Sitting beside
+  `voiceover.wav` makes it a durable project input.
+
+If ASR cannot be installed: split time by `silencedetect` pauses, distribute
+words per phrase by syllable count, and **tell the user the sync is
+approximate**. Never present an estimate as measured.
 
 Then convert it into something a `<script src>` tag can load:
 
@@ -233,8 +291,9 @@ audio still needs muxing — the command above does not change.
 
 ## 8. Loudness — not optional
 
-`bits-motion` gates the mix at I ∈ [−17, −14] LUFS, true peak ≤ −1 dBTP.
-This skill has no gate, so **do it by hand and report the number**:
+A platform targets **I ∈ [−17, −14] LUFS, true peak ≤ −1 dBTP**. A quiet mix
+passes every visual check and still plays badly everywhere, so measure it and
+report the number:
 
 ```bash
 ffmpeg -i audio/voiceover.wav -af loudnorm=print_format=summary -f null -
@@ -248,8 +307,7 @@ ffmpeg -y -i audio/voiceover.wav -af loudnorm=I=-16:TP=-1.5:LRA=11 \
 ```
 
 Then export with `audio/vo-norm.wav`, and say the measured value in the
-delivery message. A quiet mix passes every visual check and still plays badly
-on every platform.
+delivery message.
 
 ## 9. When any of this is skipped
 

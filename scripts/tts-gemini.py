@@ -1,10 +1,14 @@
 #!/usr/bin/env python3
 """Generate audio/voiceover.wav from script.txt with Gemini TTS.
 
-The payload shape, the voice list and the error table live in
-bits-motion/references/RENDER.md §3. This script is that recipe with the
-mistakes already removed: json.dumps instead of inlined curl, verbatim text
-only, and a duration sanity check against the script.
+Calls the Interactions endpoint: the script goes in verbatim, delivery goes in
+annotations[].style (instructions written inside text get read aloud), and the
+audio comes back base64 in steps[].content[].data.
+
+Builds the payload with json.dumps — inlining a script into curl -d corrupts
+quotes and newlines and comes back as 400 INVALID_ARGUMENT. Verifies the
+resulting duration against a word-count estimate, because a large gap usually
+means non-script text was spoken.
 
 Usage:
     python3 scripts/tts-gemini.py                       # script.txt -> audio/voiceover.wav

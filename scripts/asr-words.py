@@ -1,17 +1,16 @@
 #!/usr/bin/env python3
 """Transcribe audio/voiceover.wav into audio/words.json with per-word timings.
 
-This is the bits-motion/references/RENDER.md §3 recipe as a script. It exists
-so the browser skill does not depend on prose being re-read correctly, and so
-the decode step (which trips people up) is already right.
-
-Two things this does that a naive call does not:
+Two things this does that a naive faster-whisper call does not:
 
   * decodes the WAV itself with the wave module and passes a float32 numpy
     array at 16 kHz — passing a path makes some environments fail with
     "open() got an unexpected keyword argument 'metadata_errors'"
   * aligns the ASR sentence back to the spelling in script.txt, so the
     subtitle and the on-screen text carry the script's words, not the ASR's
+
+The ASR spelling is kept in `text` on purpose: only its boundaries matter, and
+correcting it would hide a bad transcription instead of surfacing it.
 
 Usage:
     python3 scripts/asr-words.py
