@@ -86,11 +86,12 @@ dikerjakan:
 | generate VO (Gemini TTS) | `scripts/tts-gemini.py` menulis `audio/voiceover.wav` dari `script.txt` | menyetujui naskah lebih dulu; kuota harian TTS |
 | rekam sendiri | alur sama, hanya lewat TTS; mulai dari `scripts/asr-words.py` | merekam dan mengirim berkas |
 | tanpa suara | video bisu, semua timing dari `DUR0` | — |
-| musik saja | musik **dikirim user** dan dipasang di bawah; tidak ada alat pembuat musik di skill ini | mengirim berkas musik, atau memintanya dari layanan lain |
+| musik saja | `scripts/make_music.py` membuat bed sintetis dari progresi akor; tidak perlu berkas dari user | tidak ada VO; bed tidak menabrak apa pun, jadi ducking tidak dipakai |
 
-Skill ini tidak menulis musik dan tidak melakukan ducking otomatis. Kalau user
-memilih "musik saja", minta berkasnya di pertanyaan yang sama — jangan
-menjanjikan musik yang belum ada.
+Musik hanya dibuat oleh `scripts/make_music.py` (sintetis, deterministik) —
+tidak ada unduhan dan tidak ada pertanyaan lisensi. Sebutkan di penyerahan
+bahwa musiknya disintesis, jangan diklaim sebagai musik berlisensi. Ducking
+music-di-bawah-VO dijelaskan di `references/voiceover.md` §9.
 
 **Pagar durasi:** ikuti durasi brief dan VO; default tetap ringkas. Jumlah
 adegan ditentukan oleh konteks yang berubah. Beberapa kalimat dapat memakai

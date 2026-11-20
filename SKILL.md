@@ -565,3 +565,4 @@ dan buat layer dari belakang ke depan. Build 10 panggung ≈ 1 jam, 0 kredit.
 | `scripts/tts-gemini.py` | TTS: `script.txt` → `audio/voiceover.wav` (payload, fallback model, kuota, cek durasi) |
 | `scripts/asr-words.py` | ASR: `audio/voiceover.wav` → `audio/words.json` per kata, `text_display` diselaraskan ke `script.txt` |
 | `scripts/make-cues.mjs` | `audio/words.json` → `audio/cues.js` (dimuat lewat `<script>`, jadi tetap jalan di `file://`) |
+| `scripts/make_music.py` | MUSIK: bed sintetis (pad + bass + arp + breath) dari progresi akor — `warm`/`dark`/`bright`, 48 kHz stereo, hanya butuh numpy |

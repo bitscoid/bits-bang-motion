@@ -316,7 +316,68 @@ ffmpeg -y -i audio/voiceover.wav -af loudnorm=I=-16:TP=-1.5:LRA=11 \
 Then export with `audio/vo-norm.wav`, and say the measured value in the
 delivery message.
 
-## 9. When any of this is skipped
+## 9. Music bed — synthesised, not licensed
+
+When the brief asks for music, generate it. No download, no licence question,
+no CDN that may vanish:
+
+```bash
+python3 scripts/make_music.py --duration 47 --out audio/music.wav
+python3 scripts/make_music.py --duration 47 --out audio/music.wav --tempo 92 --mood bright
+```
+
+`--duration` must cover the finished video, so take it from `CUES.dur` (or the
+`DUR0` of a silent build), not from the script length. Moods: `warm`
+(Am–F–C–G, editorial, sits under speech), `dark` (Dm–B♭–F–C, history and
+analysis), `bright` (C–Em–Am–G, light explainers). Default 84 bpm.
+
+The script gives you a pad, a bass, an arpeggio and a breath at each chord
+change — a progression with a pulse, not a composition. **Say it is
+synthesised** in the delivery; do not present it as licensed music.
+
+It is a bed, not a score: it does not hit marks and has no intro or outro
+sting. If the video needs a hit on a specific beat, place that with a separate
+short sound, not by regenerating the whole track.
+
+### Ducking: the music must get out of the way
+
+A bed at a fixed level fights the voice. Sidechain it so the music drops while
+someone is speaking. Measured on a 20 s test (voice −19.5 dBFS, bed −18.1):
+
+```bash
+ffmpeg -v error -y -i audio/voiceover.wav -i audio/music.wav   -filter_complex "[1:a]volume=0.30[m];[m][0:a]sidechaincompress=threshold=0.05:ratio=8:attack=20:release=400[duck];[0:a][duck]amix=inputs=2:duration=longest:dropout_transition=0:normalize=0[out]"   -map "[out]" -ar 48000 -ac 2 audio/mix.wav
+```
+
+Two things that are easy to get wrong:
+
+- **`normalize=0` is required.** Without it `amix` divides each input by the
+  number of inputs and the whole mix drops ~10 dB.
+- **`volume=0.30` before the compressor, not after.** That is what sets the
+  bed level; the compressor only decides how far it ducks.
+
+Result of the command above, measured: speech −22.3 dBFS, gaps −28.8 dBFS — the
+bed sits ~6.5 dB lower under the voice and comes back between sentences.
+
+Then loudness-check `audio/mix.wav`, not the pieces, and export with it:
+
+```bash
+ffmpeg -i audio/mix.wav -af loudnorm=print_format=summary -f null -
+```
+
+### Music only, no voice
+
+Same bed, no ducking needed:
+
+```bash
+python3 scripts/make_music.py --duration 30 --out audio/music.wav
+ffmpeg -framerate 30 -i frames/f%05d.png -i audio/music.wav   -c:v libx264 -pix_fmt yuv420p -crf 16 -c:a aac -b:a 192k -shortest output/<slug>.mp4
+```
+
+No `adelay` here — with no voiceover there is no `voDelay` to compensate for.
+If `CUES` exists but the build deliberately has no voiceover, pass
+`--no-delay` to `make-cues.mjs` so its timings start at zero.
+
+## 10. When any of this is skipped
 
 Say so plainly in the delivery, in the user's language:
 

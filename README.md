@@ -238,6 +238,7 @@ The skill triggers on requests like "make an opener…", "promo video…", "expl
 | Verify frames automatically | Node + puppeteer (`scripts/snap.mjs`) — optional; `?debug=1` works by hand |
 | Export MP4 | Node + puppeteer + ffmpeg (`scripts/export-frames.mjs`) — optional |
 | Generate a voice-over | `GEMINI_API_KEY` (`scripts/tts-gemini.py`) — optional |
+| Generate a music bed | numpy only (`scripts/make_music.py`) — optional |
 | Word-level sync | faster-whisper + ffmpeg (`scripts/asr-words.py`) — optional |
 | Sync to voice-over | word-level via faster-whisper, **or** per-pause with no extra install: `scripts/vo-pauses.html` |
 | Use video clips | MP4 (H.264) or WebM files in `assets/` — optional |
@@ -270,7 +271,7 @@ references/
   anti-ppt.md                    slide patterns → fixes
   techniques.md                  typography, camera, transitions, backgrounds, render families
   explainer.md                   explainer styles, camera recipes, VO re-timing
-  voiceover.md                   script → TTS → word timing → cues → MP4 with audio
+  voiceover.md                   script → TTS → word timing → cues → music → MP4 with audio
   kartun-panggung.md             cartoon stage explainers
   architecture.md                stage, camera rig, determinism, export
   ae-bridge-higgsfield.md        building inside After Effects via the MCP bridge
@@ -284,6 +285,7 @@ scripts/
   tts-gemini.py                  script.txt → audio/voiceover.wav (Gemini TTS)
   asr-words.py                   audio → audio/words.json (faster-whisper)
   make-cues.mjs                  words.json → audio/cues.js for the page
+  make_music.py                  synthesised music bed from a chord progression
   vo-pauses.html                 voice-over pause detection, no ffmpeg needed
   serve.py                       no-cache dev server (optional)
   ae/bridge/                     After Effects bridge helpers
