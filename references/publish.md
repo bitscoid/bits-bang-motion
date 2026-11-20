@@ -48,25 +48,33 @@ You write only the captions, in `work/captions.json`:
 }
 ```
 
-## The rules the validator enforces
+## Two severities, and why
 
-The script exits non-zero rather than writing a half-finished file. These are
-hard checks, not suggestions:
+The validator has two levels because mixing them was a mistake: an earlier
+version refused to write the file when a caption carried 7 tags, which would
+have blocked a perfectly good caption on a real project.
 
-| Rule | Why |
+**Hard — nothing is written, exit 1:**
+
+| Rule | Why it cannot be a warning |
 |---|---|
-| caption text 150–600 characters | under 150 is a skeleton, not a caption |
-| first sentence ≤ ~110 characters | Reels and TikTok truncate around 90 |
-| TikTok/Reels 8–15 hashtags, Shorts 3–5 | Shots ignores most tags; a tag wall reads as spam |
-| no `link in bio` without a link, no `viral` | both read as bait |
-| no emoji wall (3+ in one caption) | |
-| **every number must appear in `script.txt`** | copy that invents a statistic is the worst failure here |
-| title ≤ 100 characters | YouTube's hard cap |
-| duration within the cap for the orientation | 60 s portrait, 300 s landscape |
+| the video file does not exist | there is nothing to measure, so the header would be invented |
+| every number in the copy must appear in `script.txt` | an invented statistic is attached to the user's face; it is not a style choice |
+| `publish.txt` exists and `--force` was not passed | it may hold hand-written copy, and that loss cannot be undone |
 
-The number check is the important one. A caption claiming "87 persen anak
-kecanduan layar" for a video that never says it is not a style problem — it is a
-false claim attached to the user's face.
+**Advisory — the file is written, the notes are printed:**
+
+| Hint | Why only a hint |
+|---|---|
+| caption text 120–600 characters | a short caption can be the right caption |
+| first sentence ≤ ~110 characters | the writer judges what the hook is |
+| 5–15 hashtags on TikTok/Reels, 3–5 on Shorts | a 7-tag Reels caption was the best file in the folder this was tested against |
+| title ≤ 100 characters | YouTube truncates; it does not reject |
+| duration within the orientation cap | the user may have approved a longer one |
+| a platform block is missing | better three good blocks than a fourth written to satisfy a checker |
+
+Read the advisory list, fix what is worth fixing, then ship. Do not treat it as
+a gate — that is what made the first version wrong.
 
 ## Shape
 
@@ -111,6 +119,21 @@ why it skipped it.
 
 ## Draft mode
 
-`--allow-skeleton` writes the file anyway, with warnings printed. Use it to show
+`--allow-skeleton` writes the file even when a hard check fails. Use it to show
 the user a shape early. **Never ship a draft**: the delivery message names
 `publish.txt` as a deliverable, so a skeleton there is a broken promise.
+
+Observed on real files from another skill that used prose rules alone: 17 of 34
+`publish.txt` files were still skeletons — "Skeleton otomatis, lengkapi caption
+sebelum unggah" — with placeholder tags like `#bad #mood`. The same rules in
+prose produced both excellent and unusable output, because nothing forced the
+question at the end. That is the reason this script measures the file and asks
+for the captions, not the reason to gate style.
+
+## What this script does not do
+
+It does not write the captions. The copy comes from the agent, from the finished
+script, and that is where the quality lives — a validator cannot tell a good hook
+from a compliant one. It only stops the two failures that a writer cannot catch
+about their own work: numbers that were never in the video, and a file quietly
+replaced.

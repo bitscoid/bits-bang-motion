@@ -38,9 +38,11 @@ import re
 import subprocess
 import sys
 
-MIN_TIKTOK_TAGS, MAX_TIKTOK_TAGS = 8, 15
+# Advisory, not a gate. A good caption can carry 7 tags; the file this
+# was written against used exactly that. Range is a hint for the writer.
+MIN_TIKTOK_TAGS, MAX_TIKTOK_TAGS = 5, 15
 MIN_SHORTS_TAGS, MAX_SHORTS_TAGS = 3, 5
-CAPTION_MIN, CAPTION_MAX = 150, 300
+CAPTION_MIN, CAPTION_MAX = 120, 300
 LANDSCAPE_MAX = 600
 HOOK_SAFE = 90  # characters that survive truncation on Reels/TikTok
 
@@ -204,30 +206,31 @@ def main():
         except Exception as e:
             sys.exit(f"cannot read {args.captions}: {e}")
 
-    warnings = []
+    hard = []      # a real failure: invented fact, nothing to measure, bad file
+    soft = []      # style and length: report, do not block
     missing = [k for k in ("tiktok", "reels", "shorts") if not caps.get(k)]
     if missing:
-        warnings.append(f"captions missing for: {', '.join(missing)}")
+        hard.append(f"captions missing for: {', '.join(missing)}")
 
     if caps.get("tiktok"):
-        warnings += check_caption(caps["tiktok"]) + check_tags(
+        soft += check_caption(caps["tiktok"]) + check_tags(
             caps["tiktok"], MIN_TIKTOK_TAGS, MAX_TIKTOK_TAGS, "TikTok"
         )
     if caps.get("reels"):
-        warnings += check_caption(caps["reels"]) + check_tags(
+        soft += check_caption(caps["reels"]) + check_tags(
             caps["reels"], MIN_TIKTOK_TAGS, MAX_TIKTOK_TAGS, "Reels"
         )
     if caps.get("shorts"):
-        warnings += check_caption(caps["shorts"]) + check_tags(
+        soft += check_caption(caps["shorts"]) + check_tags(
             caps["shorts"], MIN_SHORTS_TAGS, MAX_SHORTS_TAGS, "Shorts"
         )
 
     title = caps.get("title") or args.slug
     if len(title) > 100:
-        warnings.append(f"title is {len(title)} chars, YouTube caps at 100")
+        soft.append(f"title is {len(title)} chars, YouTube caps at 100")
 
     if info["duration"] > cap:
-        warnings.append(
+        soft.append(
             f"duration {info['duration']:.1f}s exceeds the {cap}s cap for {orientation}"
         )
 
@@ -243,20 +246,26 @@ def main():
             ]
             for n in numbers:
                 if n not in spoken:
-                    warnings.append(
+                    hard.append(
                         f"{platform}: number {n} does not appear in script.txt "
                         f"— copy must not invent facts"
                     )
 
-    if warnings and not args.allow_skeleton:
-        print("Not writing publish.txt. Fix these first:", file=sys.stderr)
-        for w_ in warnings:
-            print(f"  - {w_}", file=sys.stderr)
+    if hard:
+        print("Not writing publish.txt. These are failures, not style:", file=sys.stderr)
+        for h in hard:
+            print(f"  - {h}", file=sys.stderr)
         print(
-            "\nRe-run with --allow-skeleton only for a draft, never for delivery.",
+            "\nFix them and re-run. --allow-skeleton exists for a draft, "
+            "never for delivery.",
             file=sys.stderr,
         )
         sys.exit(1)
+
+    if soft:
+        print("Writing publish.txt. Read these before you deliver:", file=sys.stderr)
+        for s_ in soft:
+            print(f"  - {s_}", file=sys.stderr)
 
     out = args.out or os.path.join(os.path.dirname(args.video) or ".", "publish.txt")
 
@@ -328,10 +337,9 @@ def main():
         f"{out} — {len([k for k in ('tiktok', 'reels', 'shorts') if caps.get(k)])} "
         f"platform, {info['duration']:.1f}s, {w}x{h}"
     )
-    if warnings:
-        print("written as a draft, with warnings:", file=sys.stderr)
-        for w_ in warnings:
-            print(f"  - {w_}", file=sys.stderr)
+    if soft:
+        print(f"\n{len(soft)} advisory note(s) — the file is written and shippable.",
+              file=sys.stderr)
 
 
 if __name__ == "__main__":

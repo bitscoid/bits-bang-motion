@@ -407,12 +407,18 @@ python3 scripts/publish.py --video output/<slug>.mp4 --slug "<Judul>" \
   --captions work/captions.json --script script.txt
 ```
 
-   Skrip membaca durasi, codec, resolusi, dan LUFS dari berkas jadi lalu
-   memvalidasi caption: 150–600 karakter, hook ≤ ~110, tag 8–15 (TikTok/Reels)
-   dan 3–5 (Shorts), dan **setiap angka di caption harus ada di `script.txt`**.
-   Gagal validasi = tidak menulis apa pun, exit 1. Skrip menolak menimpa
-   `publish.txt` yang sudah ada tanpa `--force` — berkas itu mungkin
-   diedit tangan. Aturan lengkap: `references/publish.md`.
+   **Caption tetap tulisanmu**, bukan hasil template. Skrip hanya mengukur
+   berkas jadi (durasi, codec, resolusi, LUFS) dan menanyakan dua hal yang
+   tidak bisa kamu nilai sendiri:
+
+   - **keras** — angka di caption tidak ada di `script.txt` (klaim palsu),
+     berkas video tidak ada, atau `publish.txt` sudah ada tanpa `--force`.
+     Ini menghentikan penulisan, exit 1.
+   - **saran** — panjang caption, jumlah tag, panjang hook, cap durasi.
+     Ditulis lalu dilaporkan; **jangan diperlakukan sebagai gerbang**.
+
+   Angka 150–600 karakter dan 5–15 tag adalah petunjuk, bukan syarat. Aturan
+   lengkap: `references/publish.md`.
 
 8. **Bersih-bersih hanya menyentuh yang TIDAK dipakai revisi.** Revisi hampir
    selalu datang setelah penyerahan, jadi default-nya: simpan. Buang hanya
