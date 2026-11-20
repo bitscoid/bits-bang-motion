@@ -49,10 +49,48 @@ produk → 3; gerak/rute → 5; sains/edukasi berkarakter → 6; topik ringan �
 |---|---|---|
 | Rasio | 16:9 (YouTube/layar) · 9:16 (Reels/TikTok/Shorts) · 1:1 | 16:9 |
 | Durasi | 30 dtk · 60 dtk · 90 dtk | 60 dtk |
-| Suara | tanpa suara · VO dikirim user nanti (bangun dulu, retime kemudian) · musik saja | tanpa suara, naskah VO tetap ditulis |
+| Suara | **generate VO (Gemini TTS)** · rekam sendiri dikirim nanti · tanpa suara · musik saja | tanpa suara, naskah VO tetap ditulis |
+
+**Pilihan "generate VO" hanya sah bila `GEMINI_API_KEY` ada.** Cek sebelum
+menawarkannya:
+
+```bash
+[ -n "$GEMINI_API_KEY" ] && echo "TTS tersedia" || echo "TTS tidak tersedia"
+```
+
+- **Ada kunci** → tawarkan sebagai pilihan pertama, dengan voice yang
+  disarankan untuk topiknya (`Kore` tegas, `Puck` ceria, `Charon`
+  informatif). Jangan menawarkan lalu diam-diam jatuh ke "tanpa suara".
+- **Tidak ada kunci** → jangan tawarkan. Sebut di pertanyaan yang sama bahwa
+  TTS tidak tersedia di mesin ini, dan tawarkan rekam sendiri sebagai
+  gantinya. Jangan menyuruh user memasang kunci sebagai langkah pertama
+  kecuali ia bertanya.
+- **Kunci ada tapi kuota habis** (`RESOURCE_EXHAUSTED` pada kedua model) →
+  berhenti, laporkan, tawarkan rekam sendiri. Jangan memperpendek naskah
+  diam-diam agar pas kuota.
+
+Kalau user memilih "generate VO", alurnya mengikat dan dijelaskan penuh di
+`references/voiceover.md`: naskah disetujui → `scripts/tts-gemini.py` →
+`scripts/asr-words.py` → `scripts/make-cues.mjs` → timeline → MP4 ber-audio.
+Kalau ia memilih "rekam sendiri", langkah TTS dilewati dan alur masuk di
+`asr-words.py` setelah berkas audionya dikirim.
 
 Yang TIDAK ditanya: caption (default tanpa) dan player (default tanpa,
 autoplay + loop).
+
+**Batas nyata tiap pilihan suara** — jangan menawarkan lebih dari yang bisa
+dikerjakan:
+
+| Pilihan | Yang benar-benar terjadi | Yang tetap jadi tugas user |
+|---|---|---|
+| generate VO (Gemini TTS) | `scripts/tts-gemini.py` menulis `audio/voiceover.wav` dari `script.txt` | menyetujui naskah lebih dulu; kuota harian TTS |
+| rekam sendiri | alur sama, hanya lewat TTS; mulai dari `scripts/asr-words.py` | merekam dan mengirim berkas |
+| tanpa suara | video bisu, semua timing dari `DUR0` | — |
+| musik saja | musik **dikirim user** dan dipasang di bawah; tidak ada alat pembuat musik di skill ini | mengirim berkas musik, atau memintanya dari layanan lain |
+
+Skill ini tidak menulis musik dan tidak melakukan ducking otomatis. Kalau user
+memilih "musik saja", minta berkasnya di pertanyaan yang sama — jangan
+menjanjikan musik yang belum ada.
 
 **Pagar durasi:** ikuti durasi brief dan VO; default tetap ringkas. Jumlah
 adegan ditentukan oleh konteks yang berubah. Beberapa kalimat dapat memakai
@@ -60,23 +98,39 @@ satu dunia dengan aktivitas yang berkembang. Materi berlebih dipotong,
 bukan videonya dipanjangkan. Permintaan "10 menit" → konfirmasi, lalu pecah
 per bab ≤ 90 dtk dengan berkas terpisah.
 
-## Penyerahan: naskah VO ikut di pesan, user yang mengisi suaranya
+## Penyerahan
 
-Explainer hampir selalu berakhir dengan VO dari user (direkam sendiri atau
-di-generate di layanan TTS pilihannya). Jadi urutan bakunya: bangun tanpa
-suara dengan timing baca → serahkan `index.html` + naskah VO DI DALAM pesan
-penutup → minta user merekam/generate dan mengirim ulang audionya → retime
-video ke audio itu. Contoh penutup:
+Ada dua jalur, dipilih di langkah nol. Jangan mencampurnya.
+
+**Jalur A — VO digenerate (Gemini TTS).** Bila user memilih ini dan
+`GEMINI_API_KEY` ada, video diserahkan **sudah bersuara**: MP4 dengan audio
+ter-mux. Alurnya di `references/voiceover.md` §1–§7. Yang diserahkan:
+
+- `output/<slug>.mp4` — H.264 + AAC, durasi = `CUES.dur`
+- `audio/voiceover.wav` dan `audio/cues.js` — agar bisa diganti suara lain
+- naskah final di dalam pesan, bukan hanya di berkas
+
+Sebutkan voice yang dipakai dan nilai loudness terukur. Kalau kuota TTS habis
+di tengah jalan, berhenti dan laporkan — jangan menyerahkan video bisu seolah
+itu hasil yang diminta.
+
+**Jalur B — user merekam sendiri.** Bangun dengan timing baca → serahkan
+`index.html` + naskah VO **di dalam pesan penutup** → minta user merekam dan
+mengirim berkasnya → alur masuk lagi di `scripts/asr-words.py` dan video
+di-retime ke audio itu. Contoh penutup:
 
 > Naskah VO (satu paragraf = satu adegan, angka ditulis dengan kata):
 > 1. …
 > 2. …
-> Rekam atau generate dengan suara pilihanmu — bicara wajar, jeda ±1 detik
-> antar paragraf, format wav/mp3 bebas — lalu kirim ke sini; videonya akan
-> saya sinkronkan ke suara itu.
+> Rekam dengan suaramu — bicara wajar, jeda ±1 detik antar paragraf, format
+> wav/mp3 bebas — lalu kirim ke sini; videonya akan saya sinkronkan ke suara
+> itu.
 
 Naskah yang sama disimpan sebagai `vo-script.md`. Jangan hanya menulis
 "naskah ada di berkas": user membaca pesan, bukan folder.
+
+**Tanpa suara sejak awal.** Tidak ada naskah, tidak ada unsur suara di
+penutup. Jangan menyelipkan naskah VO pada video yang memang diminta bisu.
 
 ## Mulai dari starter yang benar
 
@@ -232,11 +286,21 @@ dalam `#world`, di-tween opacity — murah dan langsung mengubah mood.
 lahir 1.08–1.12× dan mengendap ke 1 dalam 0.8 dtk; elemen lama keluar ke
 atas dengan blur SAMBIL yang baru masuk. Kamera tetap bernapas di antara.
 
-**Retime ke VO yang datang belakangan** (video dirancang dulu tanpa suara).
-Tanpa ffmpeg: buka `scripts/vo-pauses.html`, pilih audionya, salin `SEG`
-(mulai tiap potongan ucapan), `PARA` (mulai tiap paragraf = adegan) dan
-`DUR`; angkanya identik dengan `silencedetect` (ambang -30 dB relatif
-puncak, jeda >= 0,45 dtk, paragraf >= 0,8 dtk; ubah bila VO berisik).
+**Retime ke VO yang datang belakangan** — dua cara, pilih menurut presisi
+yang dibutuhkan:
+
+*Per-kata (dianjurkan bila VO tersedia sebagai berkas).* Jalur normal di
+`references/voiceover.md` §3–§5: `scripts/asr-words.py` →
+`scripts/make-cues.mjs` → `saySync()` membaca `CUES`. Ini yang dipakai bila
+suara digenerate dengan TTS atau user mengirim rekaman bersih.
+
+*Per-jeda (tanpa ASR).* Tanpa ffmpeg: buka `scripts/vo-pauses.html`, pilih
+audionya, salin `SEG` (mulai tiap potongan ucapan), `PARA` (mulai tiap
+paragraf = adegan) dan `DUR`; angkanya identik dengan `silencedetect` (ambang
+-30 dB relatif puncak, jeda >= 0,45 dtk, paragraf >= 0,8 dtk; ubah bila VO
+berisik). Hasilnya hanya batas adegan — teks tetap masuk dengan stagger, tidak
+per kata. Labeli ini sebagai sinkron perkiraan saat menyerahkan.
+
 Langkahnya:
 jangan tulis ulang build(). Bungkus `tl.to/fromTo/set` dengan pemetaan
 posisi linear per adegan `T(t)` dari batas adegan lama (OLD) ke awal

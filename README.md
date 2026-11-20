@@ -34,7 +34,7 @@ It also stops every project from looking the same. The look is **derived from yo
 | 🖥️ **Product & SaaS demos** | UI assembled and used on screen, camera following the clicks | 20–60 s |
 | 🔤 **Kinetic typography** | lyric-style statements, event announcements, manifestos | 10–30 s |
 | 📺 **Bumpers, idents, channel intros** | short brand moments that loop | 3–10 s |
-| 🧭 **Explainers** | six explainer styles, optional voice-over sync, 16:9 or 9:16 | 30–120 s |
+| 🧭 **Explainers** | six explainer styles, voice-over generated with Gemini TTS or supplied by you, 16:9 or 9:16 | 30–120 s |
 | 🎥 **Video layers** | your own or generated clips placed like footage — inside devices, frames, and masks, locked to the timeline | — |
 | 🎞️ **After Effects builds** | cartoon explainers built directly inside AE through the Higgsfield MCP bridge | — |
 
@@ -153,7 +153,7 @@ flowchart LR
 3. **Settle the assets.** Your own photos and logo come first. If you have none, the agent can generate them through an image MCP (fictional faces, logos added in code) — or pick a concept that needs no photos.
 4. **Let it build.** You get one `index.html`. The agent captures key seconds and checks them against the rules before handing over.
 5. **Review and iterate.** Open it, scrub with `?debug=1`, and describe what feels off. Feedback lands on the same file.
-6. **Deliver.** Keep the HTML, export MP4 with `scripts/export-frames.mjs`, or send a voice-over and the timeline re-times itself to it.
+6. **Deliver.** Keep the HTML, or export MP4 with `scripts/export-frames.mjs`. With a voice-over the timeline syncs word by word: generate one with Gemini TTS, or send your own recording.
 
 > **Tip:** start each new video in a **new chat**. The skill is read when it is first invoked, and a long chat keeps earlier decisions in context.
 
@@ -237,7 +237,9 @@ The skill triggers on requests like "make an opener…", "promo video…", "expl
 | **Watch** the result | a browser + internet (GSAP and fonts load from a CDN). Nothing else. |
 | Verify frames automatically | Node + puppeteer (`scripts/snap.mjs`) — optional; `?debug=1` works by hand |
 | Export MP4 | Node + puppeteer + ffmpeg (`scripts/export-frames.mjs`) — optional |
-| Sync to voice-over | ffmpeg, **or** nothing: `scripts/vo-pauses.html` detects pauses in the browser |
+| Generate a voice-over | `GEMINI_API_KEY` (`scripts/tts-gemini.py`) — optional |
+| Word-level sync | faster-whisper + ffmpeg (`scripts/asr-words.py`) — optional |
+| Sync to voice-over | word-level via faster-whisper, **or** per-pause with no extra install: `scripts/vo-pauses.html` |
 | Use video clips | MP4 (H.264) or WebM files in `assets/` — optional |
 | Generate images | any image MCP the agent can call — optional |
 | Build in After Effects | After Effects + the Higgsfield MCP bridge — optional |
@@ -268,6 +270,7 @@ references/
   anti-ppt.md                    slide patterns → fixes
   techniques.md                  typography, camera, transitions, backgrounds, render families
   explainer.md                   explainer styles, camera recipes, VO re-timing
+  voiceover.md                   script → TTS → word timing → cues → MP4 with audio
   kartun-panggung.md             cartoon stage explainers
   architecture.md                stage, camera rig, determinism, export
   ae-bridge-higgsfield.md        building inside After Effects via the MCP bridge
@@ -278,6 +281,9 @@ assets/
 scripts/
   snap.mjs                       verify: capture key seconds
   export-frames.mjs              export: frame-by-frame PNG → MP4
+  tts-gemini.py                  script.txt → audio/voiceover.wav (Gemini TTS)
+  asr-words.py                   audio → audio/words.json (faster-whisper)
+  make-cues.mjs                  words.json → audio/cues.js for the page
   vo-pauses.html                 voice-over pause detection, no ffmpeg needed
   serve.py                       no-cache dev server (optional)
   ae/bridge/                     After Effects bridge helpers

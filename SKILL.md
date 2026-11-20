@@ -334,6 +334,11 @@ bagian 1 dan 1b. Ringkasnya:
    suara, plus pagar durasi. Jenis lain → lanjut; tanya hanya hal yang
    benar-benar tidak bisa diturunkan dari brief (rasio, durasi, ada
    musik/VO atau tidak), dalam satu pertanyaan.
+
+   Pilihan suara mencakup **generate VO dengan Gemini TTS**, bukan hanya
+   "menyusul" — tapi tawarkan itu hanya bila `GEMINI_API_KEY` ada; cek dulu,
+   jangan menawarkan lalu jatuh diam-diam ke video bisu. Rinciannya di
+   `references/explainer.md` ("Batas nyata tiap pilihan suara").
 0b. **Tulis style brief** (Hukum #3) dan tunjukkan bersama rundown. Tanpa
    style brief yang disetujui, jangan menyentuh kode.
 0c. **Bila ada suara, baca `references/voiceover.md` sebelum menulis kode.**

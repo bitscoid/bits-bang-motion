@@ -17,6 +17,13 @@ script → TTS (or user recording) → audio/voiceover.wav → word timing
       → audio/cues.js → index.html timeline → frames → MP4 (mux audio)
 ```
 
+**This path starts only when the brief said the video carries a voice.** The
+question in `references/explainer.md` ("Langkah nol") offers three real
+options — generate with TTS, user records, or no voice at all. Do not open
+this file for a silent build, and do not quietly turn "generate" into "no
+voice" when a key or quota is missing: say what happened and offer the
+recording route instead.
+
 **Write the script first and get it approved.** Never generate audio for a
 script the user has not read. Audio is the clock for everything after it; a
 rewritten script means every tween moves.
