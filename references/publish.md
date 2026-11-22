@@ -1,22 +1,22 @@
 # Publish copy — `output/publish.txt`
 
-You write the upload package. There is no generator and no validator: the copy
-is prose, and prose is what produces good captions when the writer actually
-reads the video.
+Kamu yang menulis paket unggah. Tidak ada generator dan tidak ada validator:
+copy ini prosa, dan prosa bagus lahir saat penulisnya benar-benar menonton
+videonya.
 
-**Write this file in every delivery.** It is the last thing the user touches
-before posting; without it they have to write their own caption after watching,
-which is work that should already be done.
+**Tulis file ini di SETIAP delivery.** Ini hal terakhir yang disentuh user
+sebelum posting; tanpa file ini dia harus menulis caption sendiri setelah
+menonton, padahal itu kerja yang seharusnya sudah selesai.
 
-## Read the finished video, then write
+## Baca video jadi dulu, baru menulis
 
-Before a line is written, watch what should be delivered: the exported MP4, not
-the plan. Every claim in the copy must already be said or shown in the video.
-The hook is not a promise you hope the video keeps.
+Sebelum satu baris ditulis, tonton yang akan dikirim: MP4 hasil ekspor, bukan
+rencananya. Setiap klaim di copy harus sudah diucapkan atau diperlihatkan di
+video. Hook bukan janji yang kamu harap ditepati video.
 
-## What you must measure, not guess
+## Yang harus diukur, bukan ditebak
 
-Do not invent these numbers — read them from the file:
+Jangan mengarang angka — baca dari file:
 
 ```bash
 ffprobe -v error -show_entries \
@@ -28,96 +28,135 @@ ffmpeg -hide_banner -i output/<slug>.mp4 \
   grep -E "Input Integrated|Input True Peak"
 ```
 
-The header of `publish.txt` carries those real values:
+Header `publish.txt` memakai enam baris ini (kunci Inggris, nilai Indonesia)
+supaya file bisa diurutkan dan diparse:
 
 ```
-ANAK DAN GADGET — PAKET UNGGAH
-Video: output/anak-dan-gadget.mp4
-Spesifikasi: 1080x1920, 30 fps, 39.0 s (1170 frame), H264 + AAC stereo,
-I = -17.2 LUFS, true peak -1.8 dBTP. Berkas 4.8 MB
+# PROYEK : <slug>
+# VIDEO  : <slug>/output/<slug>.mp4
+# CHANNEL: BITS Style | BITS Tech | BITS Living
+# DURASI : <detik, satu desimal>
+# STATUS : SIAP | PERLU-REVIEW
+# UPDATE : <YYYY-MM-DD> (<satu kalimat apa yang berubah>)
 ```
 
-A header with no measured spec is a skeleton, not a delivery.
+Angka spesifikasi terukur (fps, jumlah frame, LUFS, true peak, ukuran MB) masuk
+blok `CATATAN`, bukan header. Header dengan durasi karangan adalah skeleton,
+bukan delivery.
 
-## Shape
+## Bentuk lengkap publish.txt (BITS, 2026-11-21)
+
+Ini satu-satunya bentuk yang berlaku. Tidak ada aturan caption lain.
 
 ```
+# PROYEK : <slug>
+# VIDEO  : <slug>/output/<slug>.mp4
+# CHANNEL: BITS Style | BITS Tech | BITS Living
+# DURASI : <detik, satu desimal>
+# STATUS : SIAP | PERLU-REVIEW
+# UPDATE : <YYYY-MM-DD> (<apa yang berubah>)
+
 === TikTok
-<caption> <hashtags, same block>
+<description 30–45 kata, satu paragraf>
+
+<5–8 hashtag>
 
 === Instagram Reels
-<caption> <hashtags>
+<description>
+
+<5–8 hashtag>
 
 === YouTube Shorts
-Judul: <title, <=100 chars>
-<caption> <2-5 hashtags>
+Judul: <judul maks 100 karakter>
+<description>
+
+<5–8 hashtag termasuk #Shorts>
 
 CATATAN
-- <voice, music, duration, source notes>
+- <VO, musik, LUFS, sumber — blok internal, tidak pernah dibaca Buffer>
 ```
 
-No markdown headings inside the copies, no quotes around them, no placeholder
-left in. The `===` lines are for the human reading the file; the text between
-them is what gets pasted.
+Di dalam blok platform hanya ada dua hal: satu paragraf description, dan satu
+baris hashtag. Tidak ada baris lain.
 
-A landscape build adds a `=== YouTube` block with `Judul` and `Deskripsi`
-(2–3 short lines, plus a disclaimer when the topic is financial, medical or
-legal). A portrait build never gets that block — say why it was skipped in
-`CATATAN` instead of writing a block for a format the video is not.
+### Description bukan script
 
-## Rules of thumb, not gates
+Script sampai ke penonton lewat jalur suara. Caption dibaca orang yang sedang
+memutuskan mau menonton atau tidak, dan dibaca mesin pencari. Menyalin baris VO
+ke caption membuang dua fungsi itu sekaligus.
 
-These are what the good files do. They are not a checklist to satisfy; a caption
-that breaks one deliberately is fine and should not be bent to fit.
+Tiap description punya tiga gerak:
 
-| Hint | Reasoning |
-|---|---|
-| caption 120–600 characters | shorter than that is usually a title, not a caption |
-| first sentence ≤ ~110 characters | Reels and TikTok truncate around 90; the hook has to survive |
-| 5–15 hashtags on TikTok/Reels, 3–5 on Shorts | Shorts ignores most tags; past 15 reads as a tag wall |
-| title ≤ 100 characters | YouTube's hard cap — the only real limit in this table |
-| mix the tags: one broad, several topical, at most one niche | name the subject, not the emotion |
-| per-platform difference is real | TikTok carries the long caption, Reels reads better short with a save prompt, Shorts leans on the title because the caption is collapsed |
+1. **Hook** — masalah atau kejadian yang relatable, bukan kalimat pembuka VO.
+   Harus selamat dari pemotongan ~90 karakter pertama.
+2. **Nilai** — apa yang penonton dapat setelah menonton, ditulis dengan kata
+   yang orang benar-benar cari ("cara menyimpan beras", "takaran deterjen").
+3. **Jangkar** — sebut apa yang ada di video ("ini urutan pemeriksaannya").
 
-## Failure that is not a style question
+30–45 kata, satu paragraf, tanpa emoji, tanpa em dash.
 
-One thing here is genuinely wrong rather than different: **a number in the copy
-that the video never says.** A caption claiming "87 persen anak kecanduan layar"
-for a video that never mentions it is not a style choice — it is a false claim
-attached to the user's face.
+### Hashtag
 
-Check every figure, percentage, year and count in the copy against `script.txt`
-before writing the file. If it is not there, remove it or put it in the video
-first.
+Satu baris, 5–8 tag: 2–3 topik besar, 2–3 spesifik, 1 tag channel
+(`#bitsstyle` / `#bitscoid` / `#bitsliving`), tambah `#Shorts` khusus blok
+YouTube. Sebut subjeknya, bukan emosinya.
 
-Two more that are not style:
+### Dilarang di blok platform
 
-- **Never overwrite an existing `publish.txt` without reading it.** It is the one
-  file the user may have edited by hand.
-- **Never write the file before the video exists.** Without a finished file there
-  is nothing to measure, so the header would be invented.
+- CTA apa pun: "Hubungi kami", "link di bio", "follow untuk part 2".
+- Baris `Video dibuat dengan bantuan AI.` — disclosure sudah tidak dipakai di
+  caption maupun di frame.
+- Baris `Musik: ...` atau atribusi musik apa pun.
+- Angka, persentase, tahun, atau hitungan yang tidak ada di `script.txt`.
+- Dinding emoji, kata "viral", statistik karangan.
 
-## Writing captions that are worth posting
+### Aturan berkas
 
-- **Derived from the finished script.** Every claim is something the video says
-  or shows.
-- **The first line is the hook** and it must survive truncation. Ask a question,
-  or state the surprising fact — do not open with "Video ini tentang".
-- **Language follows the narration.** Indonesian voice → Indonesian caption and
-  Indonesian hashtags (`#parentingindonesia`, not `#parentingtips`).
-- **Never include**: emoji walls, "link in bio" when there is no link, declared
-  statistics, or the word "viral".
-- **Do not ship a skeleton.** If the copy is not ready, say so and deliver
-  without the claim that `publish.txt` is done — a file reading "lengkapi
-  caption sebelum unggah" is a broken promise, not a draft.
+- Tidak ada heading markdown di dalam blok, tidak ada tanda kutip pembungkus,
+  tidak ada placeholder tersisa.
+- Baris `===` hanya penanda bagi manusia; teks di antaranya yang ditempel.
+- Build landscape menambah blok `=== YouTube` dengan `Judul` dan `Deskripsi`
+  (2–3 baris pendek, plus disclaimer bila topiknya finansial, medis, atau
+  hukum). Build portrait tidak pernah dapat blok itu — jelaskan alasannya di
+  `CATATAN`, jangan tulis blok untuk format yang bukan videonya.
+- **Jangan menimpa `publish.txt` yang sudah ada tanpa membacanya.** Itu
+  satu-satunya file yang mungkin sudah diedit tangan.
+- **Jangan menulis file sebelum video jadi.** Tanpa file jadi tidak ada yang
+  bisa diukur, jadi header akan berisi angka karangan.
+- **Jangan kirim skeleton.** Kalau copy belum siap, bilang terus terang dan
+  kirim tanpa klaim `publish.txt` selesai — file berisi "lengkapi caption
+  sebelum unggah" itu janji rusak, bukan draf.
 
-## Why there is no script for this
+## Angka yang tidak ada di video = cacat, bukan selera
 
-It was tried. A generator that measured the file and validated the captions was
-written and removed: it rejected a caption carrying 7 tags that was, by the
-user's own judgement, the best copy in the project. Compliance is not quality,
-and a script cannot tell a good hook from a compliant one.
+Satu hal di sini benar-benar salah, bukan sekadar berbeda: **angka di copy yang
+tidak pernah diucapkan video.** Caption yang mengklaim "87 persen anak kecanduan
+layar" untuk video yang tidak menyebutnya bukan pilihan gaya — itu klaim palsu
+yang ditempel ke wajah user.
 
-The one part that a writer cannot check about their own work is the invented
-number, and that is caught by re-reading `script.txt` — which is a step in the
-rules above, not a program.
+Periksa setiap angka, persentase, tahun, dan hitungan di copy terhadap
+`script.txt` sebelum menulis file. Kalau tidak ada di situ, hapus atau masukkan
+dulu ke videonya.
+
+## Menyebar ke post Buffer yang sudah terjadwal
+
+Caption post yang sudah ada di Buffer tidak ikut berubah saat file diperbaiki.
+Jalankan:
+
+```bash
+python3 /root/BITS/scripts/buffer-caption-bersih.py          # dry-run, tampilkan diff
+python3 /root/BITS/scripts/buffer-caption-bersih.py --apply  # editPost id + text
+```
+
+Aset dan `dueAt` tidak tersentuh; hanya `text`.
+
+## Kenapa tidak ada skrip penulis caption
+
+Sudah dicoba. Generator yang mengukur file dan memvalidasi caption pernah
+ditulis lalu dihapus: ia menolak caption dengan 7 tag yang justru, menurut
+penilaian user sendiri, copy terbaik di proyek itu. Kepatuhan bukan kualitas,
+dan skrip tidak bisa membedakan hook bagus dari hook yang patuh aturan.
+
+Satu-satunya bagian yang penulis tidak bisa periksa pada karyanya sendiri adalah
+angka karangan, dan itu tertangkap dengan membaca ulang `script.txt` — langkah
+di aturan atas, bukan program.
