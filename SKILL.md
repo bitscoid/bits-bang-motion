@@ -35,10 +35,9 @@ Setiap proyek mengikuti `/root/BITS/company/workflows/struktur-proyek-video.md`.
   qc/                        skrip pemeriksa
 ```
 
-Jangan membuat `renders/`, `out/`, atau menaruh video di folder utama proyek. Penjadwal tayang,
-penghitung video, dan pemeriksa kelengkapan semuanya membaca `output/`; berkas di tempat lain
-terbaca sebagai film yang tidak ada. Nama berkas berbahasa Inggris huruf kecil — `voiceover.wav`,
-bukan `Suara Voiceover.wav`.
+`output/` satu-satunya tempat film jadi berada. Penjadwal tayang, penghitung video, dan pemeriksa
+kelengkapan tidak membaca tempat lain. Nama berkas berbahasa Inggris huruf kecil: `voiceover.wav`,
+`script.txt`.
 
 ## Prasyarat — hanya browser
 
