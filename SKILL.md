@@ -21,6 +21,25 @@ Skill ini untuk AI coding agent apa pun (format Agent Skills terbuka).
 Isinya hukum dan resep untuk motion graphic yang bergerak seperti video, bukan
 presentasi — patuhi sebelum menulis kode.
 
+## Struktur proyek — satu bentuk untuk semua film
+
+Setiap proyek mengikuti `/root/BITS/company/workflows/struktur-proyek-video.md`. Ringkasnya:
+
+```
+<slug>/
+  index.html | render.py     kode
+  script.txt                 naskah (bukan naskah.txt)
+  audio/                     voiceover.wav, music.wav, words.json
+  assets/                    font, gambar, bahan
+  output/                    SATU-SATUNYA tempat <slug>.mp4 dan publish.txt
+  qc/                        skrip pemeriksa
+```
+
+Jangan membuat `renders/`, `out/`, atau menaruh video di folder utama proyek. Penjadwal tayang,
+penghitung video, dan pemeriksa kelengkapan semuanya membaca `output/`; berkas di tempat lain
+terbaca sebagai film yang tidak ada. Nama berkas berbahasa Inggris huruf kecil — `voiceover.wav`,
+bukan `Suara Voiceover.wav`.
+
 ## Prasyarat — hanya browser
 
 Deliverable (`index.html`) hanya butuh browser modern + internet untuk CDN
