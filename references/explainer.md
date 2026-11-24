@@ -67,12 +67,19 @@ Kombinasi yang masuk akal:
 | tanpa VO | ya | bumper, opener, mood piece — teks yang membawa cerita |
 | tanpa VO | tidak | slideshow senyap atau video yang akan diberi audio belakangan |
 
-**Pilihan VO "generate" hanya sah bila `GEMINI_API_KEY` ada.** Cek sebelum
-menawarkannya:
+**Pilihan VO "generate" hanya sah bila ada kunci Gemini.** Jangan cek satu
+variabel saja — kunci tersebar di tiga tempat dan dirotasi otomatis:
 
 ```bash
-[ -n "$GEMINI_API_KEY" ] && echo "TTS tersedia" || echo "TTS tidak tersedia"
+python3 /root/.hermes/keys/gemini_key.py    # 0 = TTS tidak tersedia
 ```
+
+`gemini_key.py` membaca, berurutan: `$GEMINI_API_KEY` → setiap
+`/root/.hermes/keys/*.key` → `GEMINI_API_KEY` di `/root/.hermes/.env`. Himpunan
+kunci yang sama dipakai bits-affiliate, bits-motion, bits-hyperframes, dan
+bits-bang-motion. Kuota dihitung **per kunci per model** (±10 request TTS/hari),
+jadi kunci yang habis digantikan kunci berikutnya — `tts-gemini.py` sudah
+melakukannya sendiri dan mencetak `(key#N)`.
 
 - **Ada kunci** → tawarkan sebagai pilihan pertama, dengan voice yang
   disarankan untuk topiknya (`Kore` tegas, `Puck` ceria, `Charon`
@@ -102,7 +109,7 @@ dikerjakan:
 | VO generate (Gemini TTS) | `scripts/tts-gemini.py` menulis `audio/voiceover.wav` dari `script.txt` | menyetujui naskah lebih dulu; kuota harian TTS |
 | VO rekam sendiri | alur sama, hanya lewat TTS; mulai dari `scripts/asr-words.py` | merekam dan mengirim berkas |
 | tanpa VO | tidak ada narasi; timing dari `CUES.dur` bila ada, selain itu `DUR0` | — |
-| musik dibuatkan | `scripts/make_music.py` menghasilkan bed sintetis (`warm`/`dark`/`bright`) | — |
+| musik dibuatkan | `scripts/make_music.py --brief "<suasana topik>"` menghasilkan bed sintetis generatif; brief menentukan skala, timbre, tempo | — |
 | musik kirim sendiri | berkasnya di-levelling dan di-ducking seperti bed buatan sendiri | mengirim berkas dan memastikan hak pakainya |
 
 `make_music.py` adalah satu-satunya sumber musik bawaan: sintetis,

@@ -203,6 +203,14 @@ gagal: opener adalah wajah produk, dan dua produk tidak boleh berwajah sama.
      Poppins/Inter/Roboto/Montserrat/Arial) + font pendamping; pengecualian:
      konsep klaim → cara → hasil memakai font UI produk sendiri
      (`references/opener-konsep.md`);
+   - **font selalu diunduh dari Google Fonts ke `assets/fonts/` proyek.** Tidak ada
+     font yang dibaca dari mesin dan tidak ada font bawaan skill. Setiap keluarga
+     yang dipakai diunduh sekali, disimpan di folder proyek, lalu dirujuk dari sana
+     (`@font-face` untuk jalur browser, path berkas untuk jalur PIL) sehingga render
+     sama di mesin mana pun. Unduh dari `github.com/google/fonts/raw/main/ofl/<famili>/`,
+     lalu pastikan berkasnya lebih dari 10 KB — di bawah itu berarti halaman error,
+     bukan font. Jangan pernah memakai `src: local(...)` atau font yang hanya kebetulan
+     terpasang;
    - penekanan teks: tanpa sorotan kata, atau satu bentuk sorotan (sebutkan) —
      sorotan kata OPSIONAL, bukan bawaan setiap opener;
    - bahasa latar per segmen: satu arah dari tabel "Arah gaya" untuk semua,
@@ -444,7 +452,7 @@ ffmpeg -hide_banner -i output/<slug>.mp4 \
 
 ## Checklist sebelum menyerahkan
 
-- [ ] Style brief (tema, palet dari brand, font display berkarakter, satu
+- [ ] Style brief (tema, palet dari brand, font display berkarakter dari Google Fonts di `assets/fonts/`, satu
       bahasa latar, tanda tangan gerak, momen istimewa) ditulis dan disetujui
       SEBELUM kode
 - [ ] Tidak ada sisa placeholder starter (abu-abu, font sistem, nebula bila
@@ -614,7 +622,7 @@ dan buat layer dari belakang ke depan. Build 10 panggung ≈ 1 jam, 0 kredit.
 | `scripts/tts-gemini.py` | TTS: `script.txt` → `audio/voiceover.wav` (payload, fallback model, kuota, cek durasi) |
 | `scripts/asr-words.py` | ASR: `audio/voiceover.wav` → `audio/words.json` per kata, `text_display` diselaraskan ke `script.txt` |
 | `scripts/make-cues.mjs` | `audio/words.json` → `audio/cues.js` (dimuat lewat `<script>`, jadi tetap jalan di `file://`) |
-| `scripts/make_music.py` | MUSIK: bed sintetis (pad + bass + arp + breath) dari progresi akor — `warm`/`dark`/`bright`, 48 kHz stereo, hanya butuh numpy |
+| `scripts/make_music.py` | MUSIK: bed sintetis generatif. **Wajib `--brief`** — teks bebas tentang suasana topik; brief menentukan skala, progresi akor, keluarga timbre (kapur/kayu/kaca/logam), gerak bass, kerapatan arp, tekstur, tempo, dan benih acak. Opsional `--tempo`, `--seed`. 48 kHz stereo, hanya butuh numpy |
 | `references/imagegen.md` | GAMBAR: rantai model berurutan (`phoenix → flux2dev → lucid → schnell → pollinations`), ukuran yang dipatuhi, larangan generate wajah nyata |
 | `scripts/image-gen.py` | GAMBAR: `--prompt`/`--out`/`--size`/`--model`, selalu PNG, mencatat model & percobaan ke `work/image-meta.json` |
 | `references/publish.md` | PUBLISH: bentuk `output/publish.txt`, perintah `ffprobe`/`loudnorm` untuk header, petunjuk caption per platform, larangan skeleton |

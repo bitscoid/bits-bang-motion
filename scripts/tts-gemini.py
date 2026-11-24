@@ -121,12 +121,7 @@ def main():
     ap.add_argument("--model", default=None, help="default: first available")
     args = ap.parse_args()
 
-    key = os.environ.get("GEMINI_API_KEY")
-    if not key:
-        sys.exit(
-            "GEMINI_API_KEY is not set. Do not fabricate a voice — ask the "
-            "user to record the script instead."
-        )
+    key = os.environ.get("GEMINI_API_KEY")  # opsional: rotasi di bawah menangani ini
 
     try:
         script = open(args.script, encoding="utf-8").read().strip()
@@ -138,20 +133,46 @@ def main():
     os.makedirs("audio", exist_ok=True)
     os.makedirs("work", exist_ok=True)
 
-    resp, used_model = None, None
+    # Rotasi KUNCI lalu MODEL. Kuota Gemini dihitung per key per model, jadi
+    # key yang habis digantikan key lain (lihat /root/.hermes/keys/*.key).
+    # Kuota Gemini dihitung per key per model, jadi key yang habis untuk model
+    # pertama MASIH bisa dipakai model berikutnya: `habis` direset tiap model.
+    try:
+        sys.path.insert(0, "/root/.hermes/keys")
+        from gemini_key import keys as semua_kunci
+        daftar = semua_kunci()
+    except Exception:
+        daftar = [key] if key else []
+
+    if not daftar:
+        sys.exit(
+            "Tidak ada GEMINI_API_KEY: environment kosong, tidak ada .key di "
+            "/root/.hermes/keys, dan .env juga kosong."
+        )
+
+    resp, used_model, used_key = None, None, None
     for model in [args.model] if args.model else MODELS:
-        payload = build_payload(script, model, args.voice, args.style)
-        with open("work/tts-request.json", "w", encoding="utf-8") as f:
-            json.dump(payload, f, ensure_ascii=False, indent=1)
-        print(f"model {model} -> voice {args.voice}")
-        resp = post(payload, key)
-        if "error" not in resp:
-            used_model = model
+        habis = set()  # per model: kuota dihitung per kunci per model
+        for k in daftar:
+            if k in habis:
+                continue
+            payload = build_payload(script, model, args.voice, args.style)
+            with open("work/tts-request.json", "w", encoding="utf-8") as f:
+                json.dump(payload, f, ensure_ascii=False, indent=1)
+            nomor = daftar.index(k) + 1
+            print(f"model {model} -> voice {args.voice} (key#{nomor})")
+            resp = post(payload, k)
+            if "error" not in resp:
+                used_model, used_key = model, nomor
+                break
+            err = json.dumps(resp["error"])[:400]
+            print(f"  failed: {err}")
+            if "RESOURCE_EXHAUSTED" in err or "429" in err or '"code": 400' in err:
+                habis.add(k)  # kuota/kunci tidak layak: coba key berikutnya
+                continue
+            break  # error lain: ganti key tidak akan menolong
+        if used_model:
             break
-        err = json.dumps(resp["error"])[:400]
-        print(f"  failed: {err}")
-        if "RESOURCE_EXHAUSTED" not in err and "429" not in err:
-            break  # a real error: switching models will not help
 
     with open("work/tts-response.json", "w", encoding="utf-8") as f:
         json.dump(resp, f, ensure_ascii=False)

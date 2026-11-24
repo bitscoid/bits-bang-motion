@@ -56,10 +56,14 @@ Run the script. It builds the payload, handles the model fallback, parses the
 response and checks the result against the script:
 
 ```bash
-export GEMINI_API_KEY=...            # required; never invent a voice without it
+# Tidak perlu export: kunci dibaca dari /root/.hermes/keys/*.key dan dirotasi
 python3 scripts/tts-gemini.py        # script.txt -> audio/voiceover.wav
 python3 scripts/tts-gemini.py --voice Puck --style "bright, playful"
+python3 /root/.hermes/keys/gemini_key.py   # cek berapa kunci siap
 ```
+
+Kalau kuota satu kunci habis, skrip pindah sendiri ke kunci berikutnya dan
+mencetak `(key#N)` — jangan hentikan run hanya karena satu kunci kena 429.
 
 Defaults: `gemini-3.8-flash-tts`, voice `Kore`, style
 `warm, clear, slightly upbeat`. Working voices — `Kore` (firm), `Puck`
@@ -315,6 +319,19 @@ ffmpeg -v error -y -i audio/voiceover.wav -i audio/music.wav \
 the whole mix drops ~10 dB. Measured on a 20 s test, the bed sat 6.5 dB lower
 under speech and returned between sentences.
 
+**A filter label may be consumed once.** Using `[vo]` as both the
+`sidechaincompress` key and an `amix` input yields a mix with the voice
+silently gone — ffmpeg does not error, and the result is a bed with holes where
+the narration was. Split it: `[1:a]…,asplit=2[vo][key];` then
+`[bed][key]sidechaincompress…[duck]; [vo][duck]amix…[out]`.
+
+Symptom to watch for: ASR of the finished MP4 returns one unrelated sentence
+(often a stock sign-off in another language) instead of the script. That means
+the voice is missing, not that Whisper failed — check the mix before
+regenerating anything. Confirm sync by normalised cross-correlation of the MP4
+waveform against `voiceover.wav` (8 kHz mono, expect the peak at `voDelay`,
+corr > 0.99); `silencedetect` cannot answer this once a bed is under the voice.
+
 No music, voice only → skip the filter and use `audio/voiceover.wav` directly.
 Music only → skip this step and use `audio/music.wav`.
 
@@ -392,14 +409,22 @@ The command and the ducking recipe are in §7. This section is only what you
 need in order to choose and to describe it honestly.
 
 ```bash
-python3 scripts/make_music.py --duration 47 --out audio/music.wav
-python3 scripts/make_music.py --duration 47 --out audio/music.wav --tempo 92 --mood bright
+python3 scripts/make_music.py --duration 47 --out audio/music.wav \
+    --brief "grup chat kacau, tegang, ritmis, urban, digital"
 ```
 
-`--duration` must cover the finished video — take it from `CUES.dur`, not from
-the script length. Moods: `warm` (Am–F–C–G, editorial, sits under speech),
-`dark` (Dm–B♭–F–C, history and analysis), `bright` (C–Em–Am–G, light
-explainers). Default 84 bpm, 48 kHz stereo, peak −6 dBFS.
+`--brief` **wajib** dan ditulis dari topik video — bukan disalin dari film
+sebelumnya. Brief menentukan skala (minor/dorian/major/lydian/phrygian/
+mixolydian), progresi akor fungsional, keluarga timbre (kapur/kayu/kaca/logam),
+gerak bass (root/oktaf/walking), kerapatan arp, tekstur, dan tempo — lalu
+menjadi benih acak, jadi brief sama menghasilkan audio identik (re-render tidak
+menggeser musik dari gambar yang sudah disinkronkan).
+
+`--duration` harus menutup video jadi — ambil dari `CUES.dur`, bukan dari
+panjang naskah. Opsional: `--tempo` untuk memaksa BPM, `--seed` untuk mengambil
+varian lain dari brief yang sama. Kalau topiknya butuh musik yang tidak bisa
+disintesis di sini (instrumen daerah tertentu, lagu jadi), kirim
+`audio/music.wav` sendiri — berkas user selalu dipakai lebih dulu.
 
 The output is a pad, a bass, an arpeggio and a breath at each chord change — a
 progression with a pulse, not a composition. **Say it is synthesised** in the
