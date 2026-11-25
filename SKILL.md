@@ -343,6 +343,13 @@ bagian 1 dan 1b. Ringkasnya:
   diturunkan dari bentuk brand.
 - Dua adegan berturut-turut tidak boleh sama dalam ukuran, arah masuk, dan
   posisi teks.
+- **Teks di dalam objek berbingkai** (label harga, tag gantung, stiker, kartu,
+  tombol) rata TENGAH dan satu baris. Teks yang hampir selebar kotak membungkus
+  jadi dua baris rata kiri begitu objeknya sedikit miring — terbaca sebagai
+  salah letak, bukan sebagai label. Rapatkan `letter-spacing` lebih dulu,
+  kecilkan sedikit bila masih perlu; jangan dibiarkan membungkus. Ukur dengan
+  `Range.getClientRects()` (satu rect = satu baris) dan selisih jarak
+  kiri-kanan tiap baris ≤ 6 px — bukan dinilai dengan mata.
 - Di KANTONG TEKS (bukan seluruh frame), latar harus GELAP (≤ 25 %
   luminance) atau TERANG (≥ 80 %), tidak pernah "ramai sedang". Di luar
   kantong, latar justru harus kaya: gradien, cahaya, tekstur (§7d) — flat
@@ -529,6 +536,8 @@ ffmpeg -hide_banner -i output/<slug>.mp4 \
 - [ ] Tidak ada hold panjang yang mati: babak tanpa aksi objek yang besar mendapat
       perubahan ukuran shot ke elemen (wide ↔ medium close-up ↔ close-up) atau push pelan;
       napas kamera saja tidak dihitung. Label layar di luar rig, tidak terpotong zoom
+- [ ] Teks di dalam objek berbingkai (label/tag/stiker/kartu) rata tengah dan
+      satu baris — diukur lewat `Range.getClientRects()`, bukan dikira
 - [ ] Motion blur berarah pada semua teks masuk/keluar
 - [ ] Latar lahir dari tema (tidak otomatis gelap; terang bisa gradien,
       warna lembut, blok warna, kertas), punya kedalaman (bukan satu warna
