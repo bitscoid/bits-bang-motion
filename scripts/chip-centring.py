@@ -50,6 +50,9 @@ def measure(path, box, fg=None, tol=4, border=4, radius=14):
 
     area = arr[y0:y1 + 1, x0:x1 + 1]
     if fg is None:  # base = most common colour inside the arc, ink = pixels far from it
+        # Without --fg a stroke or border inside the box counts as ink and the
+        # result reads as off-centre when it is not (seen: 25/1 reported, 4/4 real).
+        # Pass --fg with the text colour whenever the frame has an outline.
         flat = area[mask].reshape(-1, 3)
         warna, hitung = np.unique(flat, axis=0, return_counts=True)
         base = warna[hitung.argmax()]
