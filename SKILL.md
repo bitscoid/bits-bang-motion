@@ -362,6 +362,9 @@ bagian 1 dan 1b. Ringkasnya:
     garis bingkai ikut terhitung sebagai tinta. Untuk baris: `Range.getClientRects()`
     (satu rect = satu baris), selisih kiri-kanan ≤ 6 px. Bukan dinilai dengan mata
     — vision menyebut selisih 12 px "sudah tengah".
+  - Alat siap pakai: `scripts/chip-centring.py <bingkai.png> x0 y0 x1 y1` (auto
+    deteksi warna dasar, keluar kode 1 bila meleset) dan `ink_box()` di dalamnya
+    untuk menggambar.
 - Di KANTONG TEKS (bukan seluruh frame), latar harus GELAP (≤ 25 %
   luminance) atau TERANG (≥ 80 %), tidak pernah "ramai sedang". Di luar
   kantong, latar justru harus kaya: gradien, cahaya, tekstur (§7d) — flat
