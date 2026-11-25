@@ -36,7 +36,7 @@ supaya file bisa diurutkan dan diparse:
 # VIDEO  : <slug>/output/<slug>.mp4
 # CHANNEL: BITS Style | BITS Tech | BITS Living
 # DURASI : <detik, satu desimal>
-# STATUS : SIAP | PERLU-REVIEW
+# STATUS : SIAP   ← hanya "SIAP" persis yang otomatis masuk Buffer; PERLU-REVIEW menahan
 # UPDATE : <YYYY-MM-DD> (<satu kalimat apa yang berubah>)
 ```
 
@@ -53,7 +53,7 @@ Ini satu-satunya bentuk yang berlaku. Tidak ada aturan caption lain.
 # VIDEO  : <slug>/output/<slug>.mp4
 # CHANNEL: BITS Style | BITS Tech | BITS Living
 # DURASI : <detik, satu desimal>
-# STATUS : SIAP | PERLU-REVIEW
+# STATUS : SIAP   ← hanya "SIAP" persis yang otomatis masuk Buffer; PERLU-REVIEW menahan
 # UPDATE : <YYYY-MM-DD> (<apa yang berubah>)
 
 === TikTok
