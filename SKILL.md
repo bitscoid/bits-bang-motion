@@ -344,12 +344,24 @@ bagian 1 dan 1b. Ringkasnya:
 - Dua adegan berturut-turut tidak boleh sama dalam ukuran, arah masuk, dan
   posisi teks.
 - **Teks di dalam objek berbingkai** (label harga, tag gantung, stiker, kartu,
-  tombol) rata TENGAH dan satu baris. Teks yang hampir selebar kotak membungkus
-  jadi dua baris rata kiri begitu objeknya sedikit miring — terbaca sebagai
-  salah letak, bukan sebagai label. Rapatkan `letter-spacing` lebih dulu,
-  kecilkan sedikit bila masih perlu; jangan dibiarkan membungkus. Ukur dengan
-  `Range.getClientRects()` (satu rect = satu baris) dan selisih jarak
-  kiri-kanan tiap baris ≤ 6 px — bukan dinilai dengan mata.
+  tombol, chip, badge) rata TENGAH DUA ARAH — mendatar DAN tegak. Hanya tengah
+  mendatar = teks terbaca melorot, sekelas salah letak. Satu baris: teks yang
+  hampir selebar kotak membungkus jadi dua baris rata kiri begitu objeknya
+  sedikit miring. Rapatkan `letter-spacing` lebih dulu, kecilkan sedikit bila
+  masih perlu; jangan dibiarkan membungkus.
+  - DOM: serahkan penengahan pada bingkainya — `display:flex; align-items:center;
+    justify-content:center`. Jangan menggeser teks dengan `padding-top`,
+    `translate`, atau angka tetap lain; itu menutupi gejala, bukan menyelesaikan.
+  - PIL/skia (`render.py`): ukuran bingkai dan posisi teks dihitung dari TINTA
+    huruf — `font.getbbox(ch, anchor="lm")` digabung per karakter — bukan dari
+    tinggi baris font. Menusuk teks dengan angka tetap (`y + ukuran * 0.34`)
+    DILARANG; hasilnya selalu melorot dan berubah tiap ukuran font.
+  - Ukur dari PIKsel bingkai jadi, bukan dari kode: selisih titik tengah tinta
+    vs titik tengah bingkai ≤ 2 px, sisa kiri/kanan dan atas/bawah sama
+    (≤ 4 px). Buang sudut membulat dan 4 px tepi sebelum mengukur, kalau tidak
+    garis bingkai ikut terhitung sebagai tinta. Untuk baris: `Range.getClientRects()`
+    (satu rect = satu baris), selisih kiri-kanan ≤ 6 px. Bukan dinilai dengan mata
+    — vision menyebut selisih 12 px "sudah tengah".
 - Di KANTONG TEKS (bukan seluruh frame), latar harus GELAP (≤ 25 %
   luminance) atau TERANG (≥ 80 %), tidak pernah "ramai sedang". Di luar
   kantong, latar justru harus kaya: gradien, cahaya, tekstur (§7d) — flat
@@ -536,8 +548,9 @@ ffmpeg -hide_banner -i output/<slug>.mp4 \
 - [ ] Tidak ada hold panjang yang mati: babak tanpa aksi objek yang besar mendapat
       perubahan ukuran shot ke elemen (wide ↔ medium close-up ↔ close-up) atau push pelan;
       napas kamera saja tidak dihitung. Label layar di luar rig, tidak terpotong zoom
-- [ ] Teks di dalam objek berbingkai (label/tag/stiker/kartu) rata tengah dan
-      satu baris — diukur lewat `Range.getClientRects()`, bukan dikira
+- [ ] Teks di dalam objek berbingkai (label/tag/stiker/kartu/chip/badge) rata
+      tengah MENDATAR DAN TEGAK, satu baris — diukur dari piksel bingkai jadi
+      (titik tengah tinta vs bingkai ≤ 2 px, sisa atas/bawah sama), bukan dikira
 - [ ] Motion blur berarah pada semua teks masuk/keluar
 - [ ] Latar lahir dari tema (tidak otomatis gelap; terang bisa gradien,
       warna lembut, blok warna, kertas), punya kedalaman (bukan satu warna
@@ -605,7 +618,9 @@ selector CSS lebih spesifik mengalahkan state awal `opacity:0` → elemen
 muncul mendahului animasinya; module JS di-cache browser → edit "tidak
 ngefek" (pakai server `Cache-Control: no-store`); objek 3D pipih diputar
 penuh di sumbu Y → jadi sebatang garis (goyangkan, jangan putar penuh);
-kotak filter SVG default memotong ekor blur (lebarkan `x/y/width/height`).
+kotak filter SVG default memotong ekor blur (lebarkan `x/y/width/height`);
+teks chip/badge digeser dengan angka tetap (mis. `y + ukuran * 0.34` di PIL)
+→ selalu melorot, ukur dari tinta huruf dan tengahkan dua arah.
 
 ## After Effects — langsung lewat bridge Higgsfield
 
